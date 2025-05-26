@@ -1,8 +1,11 @@
 import React from 'react'
 
+
 const Subscription = () => {
     return (
-        <div>Subscription</div>
+        <div>
+            Subscription
+        </div>
     )
 }
 export default Subscription
