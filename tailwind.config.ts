@@ -7,10 +7,10 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {
-  	extend: {
+  theme: {  	extend: {
   		screens: {
   			'min-lg': '1024px',
+  			'min-2xl': '1536px',
   		},
   		colors: {
   			background: 'hsl(var(--background))',
