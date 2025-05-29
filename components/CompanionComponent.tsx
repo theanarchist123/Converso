@@ -42,33 +42,54 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             } else {
                 lottieRef.current?.stop()
             }
-        }
-    }, [isSpeaking, lottieRef])
+        }    }, [isSpeaking, lottieRef]);
 
     useEffect(() => {
-        const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
+        const onCallStart = () => {
+            console.log('Call started');
+            setCallStatus(CallStatus.ACTIVE);
+        };
 
         const onCallEnd = () => {
+            console.log('Call ended');
             setCallStatus(CallStatus.FINISHED);
-            addToSessionHistory(companionId)
+            addToSessionHistory(companionId);
         }
 
-        const onMessage = (message: any) => {
-            if(message.type === 'transcript' && message.transcriptType === 'final') {
-                const newMessage: SavedMessage = { 
-                    role: message.role === 'assistant' ? 'assistant' : 'user',
-                    content: message.transcript || ''
-                };
-                console.log('New message:', newMessage); // Debug logging
-                setMessages(prev => [newMessage, ...prev]);
+        const onMessage = (message: { type: string; transcriptType: string; role: string; transcript: string }) => {
+            console.log('Received message:', message);
+            if (message.type === 'transcript') {
+                console.log('Transcript message received:', message);
+                if (message.transcriptType === 'final') {
+                    console.log('Final transcript received:', message.transcript);
+                    const newMessage: SavedMessage = {
+                        role: message.role === 'assistant' ? 'assistant' : 'user',
+                        content: message.transcript
+                    };
+                    console.log('Adding new message:', newMessage);
+                    setMessages(prevMessages => {
+                        console.log('Previous messages:', prevMessages);
+                        return [newMessage, ...prevMessages];
+                    });
+                }
             }
         }
 
-        const onSpeechStart = () => setIsSpeaking(true);
-        const onSpeechEnd = () => setIsSpeaking(false);
+        const onSpeechStart = () => {
+            console.log('Speech started');
+            setIsSpeaking(true);
+        };
+        
+        const onSpeechEnd = () => {
+            console.log('Speech ended');
+            setIsSpeaking(false);
+        };
 
-        const onError = (error: Error) => console.error('VAPI Error:', error);
-
+        const onError = (error: Error) => {
+            console.error('VAPI Error:', error);
+            setCallStatus(CallStatus.INACTIVE);
+        };        // Register event handlers
+        console.log('Setting up VAPI event handlers');
         vapi.on('call-start', onCallStart);
         vapi.on('call-end', onCallEnd);
         vapi.on('message', onMessage);
@@ -77,6 +98,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         vapi.on('speech-end', onSpeechEnd);
 
         return () => {
+            console.log('Cleaning up VAPI event handlers');
             vapi.off('call-start', onCallStart);
             vapi.off('call-end', onCallEnd);
             vapi.off('message', onMessage);
@@ -84,7 +106,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             vapi.off('speech-start', onSpeechStart);
             vapi.off('speech-end', onSpeechEnd);
         }
-    }, [companionId]);
+    }, [companionId, setMessages, setCallStatus, setIsSpeaking]);
 
     const toggleMicrophone = () => {
         const isMuted = vapi.isMuted();
@@ -170,26 +192,30 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                         }
                     </button>
                 </div>
-            </section>
-
-            <section className="transcript">
-                <div className="transcript-message no-scrollbar">
-                    {messages.map((message, index) => {
-                        const displayName = message.role === 'assistant' 
-                            ? name.split(' ')[0].replace(/[.,]/g, '')
-                            : userName;
-                        
-                        return (
-                            <p key={index} className={cn(
-                                "max-sm:text-sm",
-                                message.role === 'assistant' ? '' : 'text-primary'
-                            )}>
-                                {displayName}: {message.content}
-                            </p>
-                        );
-                    })}
+            </section>            <section className="transcript mt-8 flex-1 min-h-[200px] relative">
+                <div className="transcript-message no-scrollbar h-full">
+                    {messages.length === 0 ? (
+                        <p className="text-center text-gray-500">No messages yet. Start speaking to see the transcript.</p>
+                    ) : (
+                        messages.map((message, index) => {
+                            const displayName = message.role === 'assistant' 
+                                ? name.split(' ')[0].replace(/[.,]/g, '')
+                                : userName;
+                            
+                            return (
+                                <p key={index} className={cn(
+                                    "max-sm:text-sm mb-4 p-2 rounded",
+                                    message.role === 'assistant' 
+                                        ? 'bg-gray-100' 
+                                        : 'bg-primary/10 text-primary'
+                                )}>
+                                    <span className="font-bold">{displayName}:</span> {message.content}
+                                </p>
+                            );
+                        })
+                    )}
                 </div>
-                <div className="transcript-fade" />
+                <div className="transcript-fade absolute bottom-0 left-0 right-0" />
             </section>
         </section>
     )
