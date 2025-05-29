@@ -18,16 +18,38 @@ export const createCompanion = async (formData: CreateCompanion) => {
     return data[0];
 }
 
-export const getAllCompanions = async ({                                           limit = 10,
-                                           page = 1,
-                                           subject,
-                                           topic,
-                                       }: GetAllCompanions) => {    const supabase = createSupabaseClient();
+export const getAllCompanions = async ({                                           
+    limit = 10,
+    page = 1,
+    subject,
+    topic,
+    bookmarked,
+}: GetAllCompanions) => {    
+    const supabase = createSupabaseClient();
 
     const { userId } = await auth();
     if (!userId) return [];
 
-    let query = supabase.from("companions").select().eq("author", userId);
+    let query = supabase.from("companions").select();
+
+    if (bookmarked) {
+        // If bookmarked is true, first get the bookmarked companion IDs
+        const { data: bookmarks } = await supabase
+            .from("bookmarks")
+            .select("companion_id")
+            .eq("user_id", userId);
+
+        if (bookmarks && bookmarks.length > 0) {
+            // Get companions that are both bookmarked by the user
+            const bookmarkedIds = bookmarks.map(({ companion_id }) => companion_id);
+            query = query.in("id", bookmarkedIds);
+        } else {
+            // If no bookmarks, return empty array
+            return [];
+        }
+    } 
+
+    query = query.eq("author", userId);
 
     if (subject && topic) {
         query = query
@@ -47,15 +69,17 @@ export const getAllCompanions = async ({                                        
         throw new Error(error.message);
     }
 
+    if (!companions) return [];
+
     // Get an array of companion IDs
-    const companionIds = companions.map(({ id }) => id);
+    const companionIds = companions.map((companion) => companion.id);
 
     // Get the bookmarks where user_id is the current user and companion_id is in the array of companion IDs
     const { data: bookmarks } = await supabase
         .from("bookmarks")
         .select()
         .eq("user_id", userId)
-        .in("companion_id", companionIds); // Notice the in() function used to filter the bookmarks by array
+        .in("companion_id", companionIds);
 
     const marks = new Set(bookmarks?.map(({ companion_id }) => companion_id));
 
