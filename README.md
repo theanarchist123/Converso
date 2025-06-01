@@ -1,15 +1,15 @@
-# LearnMate: Your AI-Powered Learning Companion
+# Converso: Your AI-Powered Learning Companion
 
 > **Have you ever wondered why traditional learning feels isolating, overwhelming, or just plain boring?**
 >
 > Many learners struggle to stay motivated, find personalized help, or track their progress. Static courses and generic content rarely adapt to your unique needs, leaving you stuck and frustrated.
 >
-> **Introducing LearnMate — the AI-powered platform that transforms the way you learn!**
+> **Introducing Converso — the AI-powered platform that transforms the way you learn!**
 
 ---
 
-## 🚀 What is LearnMate?
-LearnMate is a next-generation web application that brings interactive, personalized learning to your fingertips. With AI companions tailored to your interests and goals, you can:
+## 🚀 What is Converso?
+Converso is a next-generation web application that brings interactive, personalized learning to your fingertips. With AI companions tailored to your interests and goals, you can:
 - **Chat, ask questions, and get instant feedback**
 - **Bookmark your favorite lessons and companions**
 - **Track your learning journey and progress**
@@ -42,8 +42,8 @@ LearnMate is a next-generation web application that brings interactive, personal
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/learnmate.git
-   cd learnmate
+   git clone https://github.com/your-username/converso.git
+   cd converso
    ```
 2. **Install dependencies:**
    ```bash
@@ -71,10 +71,10 @@ LearnMate is a next-generation web application that brings interactive, personal
 
 ---
 
-## 💡 Why LearnMate?
-Learning should be engaging, adaptive, and fun. With LearnMate, you get a personal AI tutor, a supportive learning environment, and the tools you need to succeed — all in one place.
+## 💡 Why Converso?
+Learning should be engaging, adaptive, and fun. With Converso, you get a personal AI tutor, a supportive learning environment, and the tools you need to succeed — all in one place.
 
-> **Start your journey with LearnMate today and unlock your full potential!**This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+> **Start your journey with Converso today and unlock your full potential!**This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
