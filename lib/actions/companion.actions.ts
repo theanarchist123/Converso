@@ -247,3 +247,35 @@ export const getBookmarkedCompanions = async (userId: string) => {
     // We don't need the bookmarks data, so we return only the companions
     return data.map(({ companions }) => companions);
 };
+
+export const deleteCompanion = async (companionId: string, path: string) => {
+    const { userId } = await auth();
+    if (!userId) return;
+    
+    const supabase = createSupabaseClient();
+    
+    // Delete the companion
+    const { error } = await supabase
+        .from("companions")
+        .delete()
+        .eq("id", companionId)
+        .eq("author", userId);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    // Also delete any bookmarks for this companion
+    await supabase
+        .from("bookmarks")
+        .delete()
+        .eq("companion_id", companionId);
+
+    // Also delete any session history for this companion
+    await supabase
+        .from("session_history")
+        .delete()
+        .eq("companion_id", companionId);
+
+    revalidatePath(path);
+};
