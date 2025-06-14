@@ -8,8 +8,8 @@ const navItems = [
     {label:'Home',href:'/'},
     {label:'Companions',href:'/companions'},
     {label:'My Journey',href:'/my-journey'},
-
 ]
+
 const NavItems = () => {
     const pathname = usePathname();
     return (
@@ -24,4 +24,5 @@ const NavItems = () => {
         </nav>
     )
 }
+
 export default NavItems

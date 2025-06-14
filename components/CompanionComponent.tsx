@@ -6,7 +6,7 @@ import { vapi } from "@/lib/vapi.sdk";
 import Image from "next/image";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from '@/constants/soundwaves.json'
-import { addToSessionHistory } from "@/lib/actions/companion.actions";
+import { saveSessionTranscript, addToSessionHistory } from "@/lib/actions/companion.actions";
 import type { SavedMessage } from '@/types/messages';
 
 interface CompanionComponentProps {
@@ -50,10 +50,18 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             setCallStatus(CallStatus.ACTIVE);
         };
 
-        const onCallEnd = () => {
+        const onCallEnd = async () => {
             console.log('Call ended');
             setCallStatus(CallStatus.FINISHED);
-            addToSessionHistory(companionId);
+            await addToSessionHistory(companionId);
+            if (messages.length > 0) {
+                try {
+                    await saveSessionTranscript(companionId, messages);
+                    console.log('Session transcript saved successfully');
+                } catch (error) {
+                    console.error('Failed to save session transcript:', error);
+                }
+            }
         }
 
         const onMessage = (message: { type: string; transcriptType: string; role: string; transcript: string }) => {
@@ -106,7 +114,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             vapi.off('speech-start', onSpeechStart);
             vapi.off('speech-end', onSpeechEnd);
         }
-    }, [companionId, setMessages, setCallStatus, setIsSpeaking]);
+    }, [companionId, messages, setMessages, setCallStatus, setIsSpeaking]);
 
     const toggleMicrophone = () => {
         const isMuted = vapi.isMuted();

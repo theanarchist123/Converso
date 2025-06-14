@@ -45,13 +45,12 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
                             height={15}
                         />
                     </button>
-                    <button className="companion-bookmark opacity-50 hover:opacity-100 transition-opacity" onClick={handleDelete}>
+                    <button className="companion-bookmark opacity-100 hover:opacity-80 transition-opacity" onClick={handleDelete}>
                         <Image 
                             src="/icons/trash.svg" 
                             alt="delete" 
                             width={12.5} 
                             height={15}
-                            className="text-white"
                         />
                     </button>
                 </div>

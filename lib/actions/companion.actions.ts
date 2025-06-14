@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import type { CreateCompanion, GetAllCompanions, SavedMessage, SessionTranscript } from "@/types/index";
 
 export const createCompanion = async (formData: CreateCompanion) => {
     const { userId: author } = await auth();
@@ -278,4 +279,56 @@ export const deleteCompanion = async (companionId: string, path: string) => {
         .eq("companion_id", companionId);
 
     revalidatePath(path);
+};
+
+export const saveSessionTranscript = async (companionId: string, messages: SavedMessage[]) => {
+    const { userId } = await auth();
+    if (!userId) return;
+    
+    const supabase = createSupabaseClient();
+    
+    // Save the transcript
+    const { data, error } = await supabase
+        .from("session_transcripts")
+        .insert({
+            companion_id: companionId,
+            user_id: userId,
+            messages: messages,
+            created_at: new Date().toISOString()
+        });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data;
+};
+
+export const getSessionTranscripts = async (): Promise<SessionTranscript[]> => {
+    const { userId } = await auth();
+    if (!userId) return [];
+    
+    const supabase = createSupabaseClient();
+    
+    // Get all transcripts with companion details
+    const { data, error } = await supabase
+        .from("session_transcripts")
+        .select(`
+            id,
+            messages,
+            created_at,
+            companions:companion_id (
+                name,
+                subject,
+                topic
+            )
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data as SessionTranscript[];
 };
