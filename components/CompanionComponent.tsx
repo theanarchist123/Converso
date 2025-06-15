@@ -35,6 +35,11 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
 
+    // Add a useEffect to monitor callStatus changes
+    useEffect(() => {
+        console.log('CallStatus changed to:', callStatus);
+    }, [callStatus]);
+
     useEffect(() => {
         if(lottieRef) {
             if(isSpeaking) {
@@ -95,7 +100,31 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
         const onError = (error: Error) => {
             console.error('VAPI Error:', error);
-            setCallStatus(CallStatus.INACTIVE);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            
+            // Check if the error is related to meeting ejection
+            if (error.message && error.message.includes('Meeting ended due to ejection')) {
+                console.log('Meeting ended normally, handling gracefully');
+                // Force the status to FINISHED to enable the repeat button
+                setCallStatus(CallStatus.FINISHED);
+                console.log('Set status to FINISHED after ejection');
+                
+                // Save session data if there are messages
+                if (messages.length > 0) {
+                    saveSessionTranscript(companionId, messages)
+                        .then(() => console.log('Session transcript saved after ejection'))
+                        .catch(err => console.error('Failed to save transcript after ejection:', err));
+                    
+                    addToSessionHistory(companionId)
+                        .catch(err => console.error('Failed to add to session history after ejection:', err));
+                }
+            } else {
+                // Handle other errors by resetting to inactive state
+                console.log('Setting status to INACTIVE due to non-ejection error');
+                setCallStatus(CallStatus.INACTIVE);
+            }
         };        // Register event handlers
         console.log('Setting up VAPI event handlers');
         vapi.on('call-start', onCallStart);
@@ -139,8 +168,42 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     }
 
     const handleDisconnect = () => {
-        setCallStatus(CallStatus.FINISHED)
-        vapi.stop()
+        console.log('handleDisconnect called, stopping VAPI session');
+        setCallStatus(CallStatus.FINISHED);
+        vapi.stop();
+        console.log('VAPI session stopped, status set to FINISHED');
+    }
+
+    const handleRepeat = async () => {
+        console.log('handleRepeat called, current status:', callStatus);
+        
+        // Stop the current session regardless of its status
+        console.log('Stopping any active session before restart');
+        vapi.stop();
+        
+        // Then start a new session
+        console.log('Setting status to CONNECTING and clearing messages');
+        setCallStatus(CallStatus.CONNECTING);
+        setMessages([]); // Clear previous messages
+        
+        const assistantOverrides = {
+            variableValues: { subject, topic, style }
+        };
+        
+        try {
+            console.log('Starting new VAPI session with:', { voice, style, subject, topic });
+            await vapi.start(configureAssistant(voice, style), assistantOverrides);
+            console.log('VAPI session started successfully');
+        } catch (error) {
+            console.error('Failed to restart VAPI:', error);
+            // Show more detailed error information
+            if (error instanceof Error) {
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+            }
+            setCallStatus(CallStatus.INACTIVE);
+        }
     }
 
     return (
@@ -178,19 +241,38 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                             {userName}
                         </p>
                     </div>
-                    <button className="btn-mic" onClick={toggleMicrophone} disabled={callStatus !== CallStatus.ACTIVE}>
-                        <Image src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} alt="mic" width={36} height={36} />
-                        <p className="max-sm:hidden">
-                            {isMuted ? 'Turn on microphone' : 'Turn off microphone'}
-                        </p>
-                    </button>
+                    <div className="flex gap-2 w-full">
+                        <button className="btn-mic flex-1" onClick={toggleMicrophone} disabled={callStatus !== CallStatus.ACTIVE}>
+                            <Image src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} alt="mic" width={36} height={36} />
+                            <p className="max-sm:hidden">
+                                {isMuted ? 'Turn on mic' : 'Turn off mic'}
+                            </p>
+                        </button>
+                        <button 
+                            className="btn-mic flex-1" 
+                            onClick={() => {
+                                console.log('Repeat button clicked, current status:', callStatus);
+                                handleRepeat();
+                            }}
+                        >
+                            <Image src="/icons/repeat.svg" alt="repeat" width={36} height={36} />
+                            <p className="max-sm:hidden">Repeat</p>
+                        </button>
+                    </div>
                     <button 
                         className={cn(
                             'rounded-lg py-2 cursor-pointer transition-colors w-full text-white', 
                             callStatus === CallStatus.ACTIVE ? 'bg-red-700' : 'bg-primary', 
                             callStatus === CallStatus.CONNECTING && 'animate-pulse'
                         )} 
-                        onClick={callStatus === CallStatus.ACTIVE ? handleDisconnect : handleCall}
+                        onClick={() => {
+                            console.log('Session button clicked, current status:', callStatus);
+                            if (callStatus === CallStatus.ACTIVE) {
+                                handleDisconnect();
+                            } else {
+                                handleCall();
+                            }
+                        }}
                     >
                         {callStatus === CallStatus.ACTIVE
                             ? "End Session"
@@ -208,7 +290,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                         messages.map((message, index) => {
                             const displayName = message.role === 'assistant' 
                                 ? name.split(' ')[0].replace(/[.,]/g, '')
-                                : userName;
+                                : userName || 'You';
                             
                             return (
                                 <p key={index} className={cn(
