@@ -6,7 +6,7 @@ import { vapi } from "@/lib/vapi.sdk";
 import Image from "next/image";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from '@/constants/soundwaves.json'
-import { saveSessionTranscript, addToSessionHistory } from "@/lib/actions/companion.actions";
+import { saveSessionTranscript } from "@/lib/actions/session.actions";
 import type { SavedMessage } from '@/types/messages';
 
 interface CompanionComponentProps {
@@ -34,6 +34,22 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [messages, setMessages] = useState<SavedMessage[]>([]);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
+    const transcriptRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom when new messages are added
+    useEffect(() => {
+        if (transcriptRef.current) {
+            // Use setTimeout to ensure DOM has updated
+            setTimeout(() => {
+                if (transcriptRef.current) {
+                    transcriptRef.current.scrollTo({
+                        top: transcriptRef.current.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        }
+    }, [messages]);
 
     // Add a useEffect to monitor callStatus changes
     useEffect(() => {
@@ -58,7 +74,6 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         const onCallEnd = async () => {
             console.log('Call ended');
             setCallStatus(CallStatus.FINISHED);
-            await addToSessionHistory(companionId);
             if (messages.length > 0) {
                 try {
                     await saveSessionTranscript(companionId, messages);
@@ -82,7 +97,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                     console.log('Adding new message:', newMessage);
                     setMessages(prevMessages => {
                         console.log('Previous messages:', prevMessages);
-                        return [newMessage, ...prevMessages];
+                        return [...prevMessages, newMessage];
                     });
                 }
             }
@@ -115,10 +130,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                 if (messages.length > 0) {
                     saveSessionTranscript(companionId, messages)
                         .then(() => console.log('Session transcript saved after ejection'))
-                        .catch(err => console.error('Failed to save transcript after ejection:', err));
-                    
-                    addToSessionHistory(companionId)
-                        .catch(err => console.error('Failed to add to session history after ejection:', err));
+                        .catch((err: any) => console.error('Failed to save transcript after ejection:', err));
                 }
             } else {
                 // Handle other errors by resetting to inactive state
@@ -282,10 +294,13 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                         }
                     </button>
                 </div>
-            </section>            <section className="transcript mt-8 flex-1 min-h-[200px] relative">
-                <div className="transcript-message no-scrollbar h-full">
+            </section>            <section className="transcript mt-8 flex-1 min-h-[300px] relative">
+                <div 
+                    ref={transcriptRef}
+                    className="transcript-message no-scrollbar h-full overflow-y-auto max-h-[500px] p-4 bg-white/50 rounded-lg border"
+                >
                     {messages.length === 0 ? (
-                        <p className="text-center text-gray-500">No messages yet. Start speaking to see the transcript.</p>
+                        <p className="text-center text-gray-500 py-8">No messages yet. Start speaking to see the transcript.</p>
                     ) : (
                         messages.map((message, index) => {
                             const displayName = message.role === 'assistant' 
@@ -294,18 +309,20 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                             
                             return (
                                 <p key={index} className={cn(
-                                    "max-sm:text-sm mb-4 p-2 rounded",
+                                    "max-sm:text-sm mb-4 p-3 rounded-lg shadow-sm",
                                     message.role === 'assistant' 
-                                        ? 'bg-gray-100' 
-                                        : 'bg-primary/10 text-primary'
+                                        ? 'bg-gray-100 border-l-4 border-blue-500' 
+                                        : 'bg-primary/10 text-primary border-l-4 border-primary ml-8'
                                 )}>
-                                    <span className="font-bold">{displayName}:</span> {message.content}
+                                    <span className="font-bold text-xs uppercase tracking-wide opacity-70">{displayName}</span>
+                                    <br />
+                                    <span className="text-sm leading-relaxed">{message.content}</span>
                                 </p>
                             );
                         })
                     )}
                 </div>
-                <div className="transcript-fade absolute bottom-0 left-0 right-0" />
+                <div className="transcript-fade absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-white/80 to-transparent" />
             </section>
         </section>
     )

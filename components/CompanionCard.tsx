@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from "next/image";
 import Link from "next/link";
-import { addBookmark, removeBookmark, deleteCompanion } from "@/lib/actions/companion.actions";
+import { addBookmark, removeBookmark, deleteCompanion } from "@/lib/actions/companion.client";
 import { usePathname } from "next/navigation";
 interface CompanionCardProps{
     id: string;
@@ -20,7 +20,7 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
 
     const toggleBookmark = async () => {
         if (bookmarked) {
-            await removeBookmark(id, pathname);
+            await removeBookmark(id);
         } else {
             await addBookmark(id, pathname);
         }
@@ -28,7 +28,7 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
 
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this companion? This action cannot be undone.')) {
-            await deleteCompanion(id, pathname);
+            await deleteCompanion(id);
         }
     };
 

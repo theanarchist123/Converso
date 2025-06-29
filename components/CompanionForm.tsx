@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subjects } from "@/constants";
 import { Textarea } from "@/components/ui/textarea";
-import {createCompanion} from "@/lib/actions/companion.actions";
-import {redirect} from "next/navigation";
+import {createCompanion, type CompanionFormData} from "@/lib/actions/companion.client";
+import {useRouter} from "next/navigation";
 
 const formSchema = z.object({
     name: z.string().min(1,{message:'Companion is required.'}),
@@ -24,6 +24,8 @@ const formSchema = z.object({
 })
 
 const CompanionForm = () => {
+    const router = useRouter();
+    
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -39,12 +41,26 @@ const CompanionForm = () => {
 
     // 2. Define a submit handler.
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const companion = await createCompanion(values);
-        if(companion){
-            redirect(`/companions/${companion.id}`);
-        }else{
-            console.log("Companion creation failed!!");
-            redirect('/');
+        try {
+            const companionData: CompanionFormData = {
+                name: values.name,
+                subject: values.subject,
+                topic: values.topic,
+                personality: values.voice,
+                style: values.style,
+                imageUrl: '', // Add default or handle image upload
+            };
+            
+            const companion = await createCompanion(companionData);
+            if(companion){
+                router.push(`/companions/${companion.id}`);
+            } else {
+                console.log("Companion creation failed!!");
+                router.push('/');
+            }
+        } catch (error) {
+            console.error('Error creating companion:', error);
+            router.push('/');
         }
     }
 
