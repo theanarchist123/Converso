@@ -10,7 +10,13 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, subject, topic, personality, imageUrl, style } = body;
+        const { name, subject, topic, voice, style, duration } = body;
+
+        console.log('Creating companion with data:', { name, subject, topic, voice, style, duration, author: user.id });
+
+        if (!name || !subject || !topic || !voice || !style) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
 
         const supabase = createSupabaseClient();
         
@@ -20,10 +26,10 @@ export async function POST(request: NextRequest) {
                 name,
                 subject,
                 topic,
-                personality,
-                image_url: imageUrl,
+                voice,
                 style,
-                user_id: user.id,
+                duration: duration || 15,
+                author: user.id,  // Use 'author' to match existing schema
             })
             .select()
             .single();

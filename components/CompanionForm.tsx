@@ -46,9 +46,9 @@ const CompanionForm = () => {
                 name: values.name,
                 subject: values.subject,
                 topic: values.topic,
-                personality: values.voice,
+                voice: values.voice,  // Fixed: use voice instead of personality
                 style: values.style,
-                imageUrl: '', // Add default or handle image upload
+                duration: values.duration,  // Added duration
             };
             
             const companion = await createCompanion(companionData);

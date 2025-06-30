@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from "next/image";
 import Link from "next/link";
 import { addBookmark, removeBookmark, deleteCompanion } from "@/lib/actions/companion.client";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 interface CompanionCardProps{
     id: string;
     name: string;
@@ -17,18 +17,40 @@ interface CompanionCardProps{
 
 const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:CompanionCardProps) => {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isDeleted, setIsDeleted] = useState(false);
+    
+    // If the component is deleted, don't render anything
+    if (isDeleted) {
+        return null;
+    }
 
     const toggleBookmark = async () => {
-        if (bookmarked) {
-            await removeBookmark(id);
-        } else {
-            await addBookmark(id, pathname);
+        try {
+            if (bookmarked) {
+                await removeBookmark(id);
+            } else {
+                await addBookmark(id, pathname);
+            }
+            // Force refresh the current page to update UI
+            router.refresh();
+        } catch (error) {
+            console.error('Error toggling bookmark:', error);
         }
     };
 
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this companion? This action cannot be undone.')) {
-            await deleteCompanion(id);
+            try {
+                await deleteCompanion(id);
+                // Remove the card from UI immediately
+                setIsDeleted(true);
+                // Also refresh the page data to ensure it's updated on the server
+                router.refresh();
+            } catch (error) {
+                console.error('Error deleting companion:', error);
+                alert('Failed to delete companion. Please try again.');
+            }
         }
     };
 

@@ -21,30 +21,37 @@ export async function DELETE(request: NextRequest) {
         // First verify the companion belongs to the user
         const { data: companion, error: fetchError } = await supabase
             .from('companions')
-            .select('user_id')
+            .select('author')  // Changed from 'user_id' to 'author'
             .eq('id', companionId)
             .single();
 
         if (fetchError || !companion) {
+            console.error('Error fetching companion:', fetchError);
             return NextResponse.json({ error: 'Companion not found' }, { status: 404 });
         }
 
-        if (companion.user_id !== user.id) {
+        if (companion.author !== user.id) {  // Changed from 'user_id' to 'author'
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
+
+        console.log('Deleting companion:', companionId, 'for user:', user.id);
 
         // Delete the companion
         const { error } = await supabase
             .from('companions')
             .delete()
             .eq('id', companionId)
-            .eq('user_id', user.id);
+            .eq('author', user.id);  // Changed from 'user_id' to 'author'
 
         if (error) {
             console.error('Error deleting companion:', error);
-            return NextResponse.json({ error: 'Failed to delete companion' }, { status: 500 });
+            return NextResponse.json({ 
+                error: 'Failed to delete companion', 
+                details: error.message 
+            }, { status: 500 });
         }
 
+        console.log('Companion deleted successfully:', companionId);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error in delete companion API:', error);
