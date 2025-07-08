@@ -1,5 +1,5 @@
 // Client-side session types and utilities
-import type { SavedMessage } from '@/types/messages';
+import type { SavedMessage, SessionRecap } from '@/types/messages';
 
 export interface SessionTranscript {
     id: string;
@@ -44,5 +44,37 @@ export const saveSessionTranscript = async (companionId: string, messages: Saved
     } catch (error) {
         console.error('Error saving session:', error);
         return false;
+    }
+};
+
+export const generateSessionRecap = async (
+    messages: SavedMessage[],
+    companionName: string,
+    subject: string,
+    topic: string
+): Promise<SessionRecap | null> => {
+    try {
+        const response = await fetch('/api/session/recap', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, companionName, subject, topic })
+        });
+        
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Error generating recap:', error);
+        return null;
+    }
+};
+
+export const getUserRecaps = async (): Promise<SessionRecap[]> => {
+    try {
+        const response = await fetch('/api/session/recaps');
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching recaps:', error);
+        return [];
     }
 };

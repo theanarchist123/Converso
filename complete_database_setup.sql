@@ -42,10 +42,26 @@ CREATE TABLE IF NOT EXISTS session_transcripts (
         ON DELETE CASCADE
 );
 
+-- Create session_recaps table
+CREATE TABLE IF NOT EXISTS session_recaps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id TEXT NOT NULL,  -- TEXT for Clerk user IDs
+    companion_name TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    bullet_points TEXT[] NOT NULL DEFAULT '{}',
+    key_topics TEXT[] NOT NULL DEFAULT '{}',
+    summary TEXT NOT NULL,
+    messages_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Disable RLS for all tables (Clerk compatibility)
 ALTER TABLE companions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE bookmarks DISABLE ROW LEVEL SECURITY;
 ALTER TABLE session_transcripts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE session_recaps DISABLE ROW LEVEL SECURITY;
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_companions_author ON companions(author);
@@ -58,6 +74,9 @@ CREATE INDEX IF NOT EXISTS idx_bookmarks_companion_id ON bookmarks(companion_id)
 CREATE INDEX IF NOT EXISTS idx_session_transcripts_user_id ON session_transcripts(user_id);
 CREATE INDEX IF NOT EXISTS idx_session_transcripts_companion_id ON session_transcripts(companion_id);
 CREATE INDEX IF NOT EXISTS idx_session_transcripts_created_at ON session_transcripts(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_session_recaps_user_id ON session_recaps(user_id);
+CREATE INDEX IF NOT EXISTS idx_session_recaps_created_at ON session_recaps(created_at DESC);
 
 -- Verify table creation
 SELECT 'All Converso tables created successfully!' as status;

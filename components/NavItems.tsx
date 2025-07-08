@@ -9,6 +9,7 @@ const navItems = [
     {label:'Companions',href:'/companions'},
     {label:'My Journey',href:'/my-journey'},
     {label:'Session History',href:'/session-history'},
+    {label:'Recaps',href:'/recaps'},
 ]
 
 const NavItems = () => {

@@ -6,8 +6,9 @@ import { vapi } from "@/lib/vapi.sdk";
 import Image from "next/image";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from '@/constants/soundwaves.json'
-import { saveSessionTranscript } from "@/lib/actions/session.actions";
-import type { SavedMessage } from '@/types/messages';
+import { saveSessionTranscript, generateSessionRecap } from "@/lib/actions/session.actions";
+import type { SavedMessage, SessionRecap } from '@/types/messages';
+import SessionRecapModal from './SessionRecapModal';
 
 interface CompanionComponentProps {
     companionId: string;
@@ -32,6 +33,9 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [messages, setMessages] = useState<SavedMessage[]>([]);
+    const [showRecapModal, setShowRecapModal] = useState(false);
+    const [currentRecap, setCurrentRecap] = useState<SessionRecap | null>(null);
+    const [isGeneratingRecap, setIsGeneratingRecap] = useState(false);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const transcriptRef = useRef<HTMLDivElement>(null);
@@ -76,10 +80,22 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             setCallStatus(CallStatus.FINISHED);
             if (messages.length > 0) {
                 try {
+                    // Save session transcript
                     await saveSessionTranscript(companionId, messages);
                     console.log('Session transcript saved successfully');
+                    
+                    // Generate recap
+                    setIsGeneratingRecap(true);
+                    const recap = await generateSessionRecap(messages, name, subject, topic);
+                    setIsGeneratingRecap(false);
+                    
+                    if (recap) {
+                        setCurrentRecap(recap);
+                        setShowRecapModal(true);
+                    }
                 } catch (error) {
-                    console.error('Failed to save session transcript:', error);
+                    console.error('Failed to save session transcript or generate recap:', error);
+                    setIsGeneratingRecap(false);
                 }
             }
         }
@@ -126,11 +142,26 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                 setCallStatus(CallStatus.FINISHED);
                 console.log('Set status to FINISHED after ejection');
                 
-                // Save session data if there are messages
+                // Save session data and generate recap if there are messages
                 if (messages.length > 0) {
                     saveSessionTranscript(companionId, messages)
                         .then(() => console.log('Session transcript saved after ejection'))
                         .catch((err: any) => console.error('Failed to save transcript after ejection:', err));
+                    
+                    // Generate recap
+                    setIsGeneratingRecap(true);
+                    generateSessionRecap(messages, name, subject, topic)
+                        .then((recap) => {
+                            setIsGeneratingRecap(false);
+                            if (recap) {
+                                setCurrentRecap(recap);
+                                setShowRecapModal(true);
+                            }
+                        })
+                        .catch((err: any) => {
+                            console.error('Failed to generate recap after ejection:', err);
+                            setIsGeneratingRecap(false);
+                        });
                 }
             } else {
                 // Handle other errors by resetting to inactive state
@@ -324,6 +355,28 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                 </div>
                 <div className="transcript-fade absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-white/80 to-transparent" />
             </section>
+
+            {/* Recap Generation Loading */}
+            {isGeneratingRecap && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+                    <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center">
+                        <div className="mb-4">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Generating Your Recap</h3>
+                        <p className="text-gray-600">Please wait while we create a summary of your learning session...</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Session Recap Modal */}
+            <SessionRecapModal
+                isOpen={showRecapModal}
+                onClose={() => setShowRecapModal(false)}
+                recap={currentRecap}
+                companionName={name}
+                subject={subject}
+            />
         </section>
     )
 }
