@@ -112,13 +112,18 @@ export const getCompanion = async (id: string) => {
 
 export const addToSessionHistory = async (companionId: string) => {
     const { userId } = await auth();
+    if (!userId) return null;
+    
     const supabase = createSupabaseClient();
     const { data, error } = await supabase.from("session_history").insert({
         companion_id: companionId,
         user_id: userId,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        console.error('Error adding to session history:', error);
+        return null;
+    }
 
     return data;
 };
@@ -128,16 +133,51 @@ export const getRecentSessions = async (limit = 10) => {
     if (!userId) return [];
     
     const supabase = createSupabaseClient();
-    const { data, error } = await supabase
+    
+    // First try to get from session_history table
+    const { data: historyData, error: historyError } = await supabase
         .from("session_history")
         .select(`companions:companion_id (*)`)
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
 
-    if (error) throw new Error(error.message);
+    if (!historyError && historyData && historyData.length > 0) {
+        return historyData
+            .map(({ companions }) => companions)
+            .filter(companion => companion !== null);
+    }
 
-    return data.map(({ companions }) => companions);
+    // Fallback: get recent sessions from session_transcripts if session_history is empty or doesn't exist
+    console.log('Falling back to session_transcripts for recent sessions');
+    const { data: transcriptData, error: transcriptError } = await supabase
+        .from("session_transcripts")
+        .select(`
+            companion_id,
+            companions:companion_id (*)
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit * 2); // Get more to account for duplicates
+
+    if (transcriptError) {
+        console.error('Error fetching recent sessions from transcripts:', transcriptError);
+        return [];
+    }
+
+    if (!transcriptData) return [];
+
+    // Remove duplicates by companion_id and take only the requested limit
+    const seen = new Set();
+    return transcriptData
+        .filter(item => {
+            if (seen.has(item.companion_id)) return false;
+            seen.add(item.companion_id);
+            return true;
+        })
+        .slice(0, limit)
+        .map(({ companions }) => companions)
+        .filter(companion => companion !== null);
 };
 
 export const getUserSessions = async (userId: string, limit = 10) => {
@@ -317,7 +357,8 @@ export const getSessionTranscripts = async (): Promise<SessionTranscript[]> => {
             id,
             messages,
             created_at,
-            companions:companion_id (
+            companion_id,
+            companions!companion_id (
                 name,
                 subject,
                 topic
@@ -330,5 +371,14 @@ export const getSessionTranscripts = async (): Promise<SessionTranscript[]> => {
         throw new Error(error.message);
     }
 
-    return data as SessionTranscript[];
+    if (!data) return [];
+
+    return data.map(item => ({
+        id: item.id,
+        messages: item.messages,
+        created_at: item.created_at,
+        companions: Array.isArray(item.companions) && item.companions.length > 0 
+            ? item.companions[0] 
+            : { name: '', subject: '', topic: '' }
+    })) as SessionTranscript[];
 };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { createSupabaseClient } from '@/lib/supabase';
+import { addToSessionHistory } from '@/lib/actions/companion.actions';
 import type { SavedMessage } from '@/types/messages';
 
 export async function POST(request: NextRequest) {
@@ -31,6 +32,14 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Error saving session transcript:', error);
             return NextResponse.json({ error: `Failed to save session: ${error.message}` }, { status: 500 });
+        }
+
+        // Also add to session history for recent sessions tracking
+        try {
+            await addToSessionHistory(companionId);
+        } catch (historyError) {
+            console.error('Error adding to session history:', historyError);
+            // Don't fail the request if history fails, just log it
         }
 
         console.log('Session saved successfully:', data);
