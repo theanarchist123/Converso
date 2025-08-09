@@ -1,0 +1,14 @@
+{
+    "servers": {
+        "TestSprite": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "@testsprite/testsprite-mcp@latest"
+            ],
+            "env": {
+                "API_KEY": "sk-user-Dg49zQRbkYuOfB-nTi8RFlmXOODWAYtR5IkVBD0bkBfxjnl_MBmz2cKmGgP2nCQam-9r30dVXnPNTm3pxZm1aLgO0ceKumOAj3waBpXAzIS4fVlVuXaawRQl7ZNOVeSePIg"
+      }
+        }
+    }
+}

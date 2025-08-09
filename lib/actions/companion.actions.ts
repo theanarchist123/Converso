@@ -26,12 +26,13 @@ export const getAllCompanions = async ({
     topic,
     bookmarked,
 }: GetAllCompanions) => {    
-    const supabase = createSupabaseClient();
+    try {
+        const supabase = createSupabaseClient();
 
-    const { userId } = await auth();
-    if (!userId) return [];
+        const { userId } = await auth();
+        if (!userId) return [];
 
-    let query = supabase.from("companions").select();
+        let query = supabase.from("companions").select();
 
     if (bookmarked) {
         // If bookmarked is true, first get the bookmarked companion IDs
@@ -91,6 +92,10 @@ export const getAllCompanions = async ({
 
     // Return the companions as before, but with the bookmarked property added
     return companions;
+    } catch (error) {
+        console.error('Error in getAllCompanions:', error);
+        return [];
+    }
 };
 
 export const getCompanion = async (id: string) => {

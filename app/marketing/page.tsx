@@ -1,9 +1,7 @@
-'use client';
-
 import Link from "next/link";
 import Image from "next/image";
 
-export default function Page() {
+export default function MarketingPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
             {/* Navigation */}
@@ -61,5 +59,3 @@ export default function Page() {
         </div>
     );
 }
-
-
