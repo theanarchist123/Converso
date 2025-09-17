@@ -13,6 +13,8 @@ import {
 } from "@/lib/actions/companion.actions";
 import Image from "next/image";
 import CompanionsList from "@/components/CompanionList";
+import LearningLogForm from "@/components/LearningLogForm";
+import LearningLogDisplay from "@/components/LearningLogDisplay";
 
 const Profile = async () => {
     const user = await currentUser();
@@ -93,6 +95,17 @@ const Profile = async () => {
                     </AccordionTrigger>
                     <AccordionContent>
                         <CompanionsList title="My Companions" companions={companions} />
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="learning-logs">
+                    <AccordionTrigger className="text-2xl font-bold">
+                        📝 Learning Logs
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="space-y-6">
+                            <LearningLogForm />
+                            <LearningLogDisplay limit={10} />
+                        </div>
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
