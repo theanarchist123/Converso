@@ -12,30 +12,107 @@ interface AdminInfo {
   permissions: string[];
 }
 
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  createdAt: string;
+  lastSignInAt: string;
+  banned: boolean;
+  imageUrl: string;
+}
+
+interface Analytics {
+  overview: {
+    totalUsers: number;
+    totalSessions: number;
+    averageSessionTime: string;
+    activeUsersToday: number;
+  };
+  userGrowth: Array<{
+    date: string;
+    users: number;
+    sessions: number;
+  }>;
+  topMetrics: {
+    mostActiveHour: string;
+    popularFeatures: Array<{ name: string; usage: string }>;
+    retentionRate: string;
+  };
+  recentActivity: Array<{
+    action: string;
+    time: string;
+    user: string;
+  }>;
+}
+
+interface Companion {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  userId: string;
+  createdAt: string;
+  status: string;
+  reportCount: number;
+  isPublic: boolean;
+}
+
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState<AdminInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [users, setUsers] = useState<User[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [companions, setCompanions] = useState<Companion[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    // Check if admin is logged in
-    const adminData = localStorage.getItem('admin');
-    const token = localStorage.getItem('admin_token');
+    const validateAndSetAdmin = async () => {
+      // Check if admin is logged in
+      const adminData = localStorage.getItem('admin');
+      const token = localStorage.getItem('admin_token');
 
-    if (!adminData || !token) {
-      router.push('/admin/login');
-      return;
-    }
+      if (!adminData || !token) {
+        router.push('/admin/login');
+        return;
+      }
 
-    try {
-      setAdmin(JSON.parse(adminData));
-    } catch (error) {
-      router.push('/admin/login');
-      return;
-    }
+      try {
+        // Validate token by making a test request
+        const response = await fetch('/api/admin/test-auth', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-    setIsLoading(false);
+        if (!response.ok) {
+          console.log('Token validation failed, redirecting to login');
+          localStorage.removeItem('admin');
+          localStorage.removeItem('admin_token');
+          router.push('/admin/login');
+          return;
+        }
+
+        const testResult = await response.json();
+        if (!testResult.step4_final?.success) {
+          console.log('Token validation failed, redirecting to login');
+          localStorage.removeItem('admin');
+          localStorage.removeItem('admin_token');
+          router.push('/admin/login');
+          return;
+        }
+
+        setAdmin(JSON.parse(adminData));
+        setIsLoading(false);
+      } catch (error) {
+        console.log('Token validation error:', error);
+        localStorage.removeItem('admin');
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
+      }
+    };
+
+    validateAndSetAdmin();
   }, [router]);
 
   const handleLogout = async () => {
@@ -47,7 +124,6 @@ export default function AdminDashboard() {
       // Continue with logout even if API call fails
     }
 
-    // Clear local storage
     localStorage.removeItem('admin');
     localStorage.removeItem('admin_token');
     
@@ -70,6 +146,152 @@ export default function AdminDashboard() {
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
+
+  // Fetch users data
+  useEffect(() => {
+    if (admin && activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [admin, activeTab]);
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('admin');
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
+        return;
+      }
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  // Fetch analytics data
+  useEffect(() => {
+    if (admin && activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [admin, activeTab]);
+
+  const fetchAnalytics = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/analytics', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('admin');
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
+        return;
+      }
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+  };
+
+  // Fetch companions data
+  useEffect(() => {
+    if (admin && activeTab === 'companions') {
+      fetchCompanions();
+    }
+  }, [admin, activeTab]);
+
+  const fetchCompanions = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/companions', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('admin');
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
+        return;
+      }
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCompanions(data.companions || []);
+      }
+    } catch (error) {
+      console.error('Error fetching companions:', error);
+    }
+  };
+
+  const handleUserAction = async (userId: string, action: string) => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, action })
+      });
+
+      if (response.ok) {
+        fetchUsers(); // Refresh users list
+      }
+    } catch (error) {
+      console.error('Error performing user action:', error);
+    }
+  };
+
+  const handleCompanionAction = async (companionId: string, action: string) => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/companions', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ companionId, action })
+      });
+
+      if (response.ok) {
+        fetchCompanions(); // Refresh companions list
+      }
+    } catch (error) {
+      console.error('Error performing companion action:', error);
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', name: 'Overview', icon: '📊' },
+    { id: 'users', name: 'Users', icon: '👥' },
+    { id: 'analytics', name: 'Analytics', icon: '📈' },
+    { id: 'companions', name: 'Companions', icon: '🤖' }
+  ];
 
   if (isLoading) {
     return (
@@ -108,13 +330,12 @@ export default function AdminDashboard() {
                 <p className="text-sm font-medium text-gray-900">
                   {admin.firstName} {admin.lastName}
                 </p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-xs text-gray-600">{admin.email}</p>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRoleBadgeColor(admin.role)}`}>
-                    {formatRole(admin.role)}
-                  </span>
-                </div>
+                <p className="text-xs text-gray-600">{admin.email}</p>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRoleBadgeColor(admin.role)}`}>
+                  {formatRole(admin.role)}
+                </span>
               </div>
+
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
@@ -126,21 +347,15 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'overview', name: 'Overview', icon: '📊' },
-              { id: 'users', name: 'User Management', icon: '👥' },
-              { id: 'analytics', name: 'Analytics', icon: '📈' },
-              { id: 'companions', name: 'Companions', icon: '🤖' },
-              { id: 'settings', name: 'Settings', icon: '⚙️' }
-            ].map((tab) => (
+      {/* Navigation Tabs */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -150,135 +365,291 @@ export default function AdminDashboard() {
                 {tab.name}
               </button>
             ))}
-          </nav>
+          </div>
         </div>
+      </nav>
 
-        {/* Tab Content */}
-        <div className="space-y-6">
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Overview Cards */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-semibold text-gray-900">1,234</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Active Sessions</p>
-                    <p className="text-2xl font-semibold text-gray-900">89</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Companions</p>
-                    <p className="text-2xl font-semibold text-gray-900">456</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.282 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
-                    <p className="text-2xl font-semibold text-gray-900">12</p>
-                  </div>
-                </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Welcome to Admin Dashboard</h3>
+                <p className="text-gray-600">
+                  Hello {admin.firstName}! You have <strong>{admin.role}</strong> access.
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Use the tabs above to manage users, view analytics, and moderate companions.
+                </p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === 'users' && (
-            <div className="bg-white rounded-lg shadow">
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">User Management</h3>
-                <p className="text-sm text-gray-600">Manage user accounts and permissions</p>
+                <p className="text-sm text-gray-600">Manage and moderate platform users</p>
               </div>
-              <div className="p-6">
-                <p className="text-gray-600">User management interface will be implemented here.</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Last Active
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <img className="h-10 w-10 rounded-full" src={user.imageUrl || '/default-avatar.png'} alt="" />
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.firstName} {user.lastName}
+                              </div>
+                              <div className="text-sm text-gray-500">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {user.banned ? 'Banned' : 'Active'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleDateString() : 'Never'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                          {!user.banned ? (
+                            <button
+                              onClick={() => handleUserAction(user.id, 'ban')}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Ban
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUserAction(user.id, 'unban')}
+                              className="text-green-600 hover:text-green-900"
+                            >
+                              Unban
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleUserAction(user.id, 'delete')}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === 'analytics' && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Analytics Dashboard</h3>
-                <p className="text-sm text-gray-600">View app usage statistics and insights</p>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600">Analytics dashboard will be implemented here.</p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'companions' && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Companion Moderation</h3>
-                <p className="text-sm text-gray-600">Review and moderate user-created companions</p>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600">Companion moderation interface will be implemented here.</p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">System Settings</h3>
-                <p className="text-sm text-gray-600">Configure system-wide settings</p>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Your Permissions</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {admin.permissions.map((permission) => (
-                        <span
-                          key={permission}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
-                          {permission.replace(/_/g, ' ')}
-                        </span>
-                      ))}
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {analytics && (
+                <>
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">👥</span>
+                        </div>
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                          <dd className="text-lg font-medium text-gray-900">{analytics.overview.totalUsers}</dd>
+                        </dl>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">📊</span>
+                        </div>
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
+                          <dd className="text-lg font-medium text-gray-900">{analytics.overview.totalSessions}</dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">⏱️</span>
+                        </div>
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">Avg Session Time</dt>
+                          <dd className="text-lg font-medium text-gray-900">{analytics.overview.averageSessionTime}</dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">🔥</span>
+                        </div>
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">Active Today</dt>
+                          <dd className="text-lg font-medium text-gray-900">{analytics.overview.activeUsersToday}</dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Recent Activity */}
+            {analytics && (
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {analytics.recentActivity.map((activity, index) => (
+                    <div key={index} className="px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                          <p className="text-sm text-gray-500">by {activity.user}</p>
+                        </div>
+                        <div className="text-sm text-gray-500">{activity.time}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Companions Tab */}
+        {activeTab === 'companions' && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Companion Moderation</h3>
+                <p className="text-sm text-gray-600">Moderate and manage AI companions</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Companion
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Reports
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {companions.map((companion) => (
+                      <tr key={companion.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{companion.name}</div>
+                            <div className="text-sm text-gray-500">{companion.description}</div>
+                            <div className="text-xs text-gray-400">{companion.category}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            companion.status === 'active' ? 'bg-green-100 text-green-800' :
+                            companion.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {companion.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {companion.reportCount}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(companion.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                          <button
+                            onClick={() => handleCompanionAction(companion.id, 'approve')}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleCompanionAction(companion.id, 'suspend')}
+                            className="text-yellow-600 hover:text-yellow-900"
+                          >
+                            Suspend
+                          </button>
+                          <button
+                            onClick={() => handleCompanionAction(companion.id, 'delete')}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

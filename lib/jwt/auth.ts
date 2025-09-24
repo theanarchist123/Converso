@@ -84,7 +84,7 @@ export function generateTokenPair(adminData: {
 }
 
 /**
- * Verify JWT access token
+ * Verify JWT access token and return payload
  */
 export function verifyAccessToken(token: string): JWTPayload | null {
   try {
@@ -92,12 +92,18 @@ export function verifyAccessToken(token: string): JWTPayload | null {
       issuer: 'converso-admin',
       audience: 'admin-panel'
     }) as JWTPayload;
-    
+
     if (decoded.type !== 'access') {
       return null;
     }
-    
-    return decoded;
+
+    return {
+      adminId: decoded.adminId,
+      email: decoded.email,
+      role: decoded.role,
+      permissions: decoded.permissions || [],
+      type: decoded.type
+    };
   } catch (error) {
     return null;
   }
@@ -165,6 +171,13 @@ export function getAdminFromRequest(request: NextRequest): JWTPayload | null {
   }
   
   return verifyAccessToken(token);
+}
+
+/**
+ * Verify admin JWT token and return admin payload (alias for getAdminFromRequest)
+ */
+export function verifyAdminJWT(request: NextRequest): JWTPayload | null {
+  return getAdminFromRequest(request);
 }
 
 /**
