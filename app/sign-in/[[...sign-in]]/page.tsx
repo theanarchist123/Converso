@@ -1,16 +1,32 @@
 'use client';
 
-import { useSignIn } from '@clerk/nextjs';
+import { useSignIn, useUser } from '@clerk/nextjs';
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { signIn, isLoading, setActive } = useSignIn();
+    const { user, isLoaded } = useUser();
     const router = useRouter();
+
+    // Check if user is banned - redirect to banned page immediately
+    useEffect(() => {
+        if (isLoaded && user) {
+            const isBanned = (user.publicMetadata as any)?.status === 'banned';
+            if (isBanned) {
+                console.log('🚫 Banned user detected on sign-in page, redirecting to /banned');
+                router.push('/banned');
+            } else {
+                // If logged in and not banned, redirect to app
+                console.log('✅ User already logged in, redirecting to /app');
+                router.push('/app');
+            }
+        }
+    }, [user, isLoaded, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +40,7 @@ export default function Page() {
 
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
-                router.push('/');
+                router.push('/app');
             }
         } catch (err: any) {
             console.error("Error during sign in:", err.errors ? err.errors[0].message : err);
@@ -43,7 +59,7 @@ export default function Page() {
 
             if (verification.status === "complete") {
                 await setActive({ session: verification.createdSessionId });
-                window.location.href = "/"; // Redirect to home after successful verification
+                window.location.href = "/app"; // Redirect to app after successful verification
             }
         } catch (err: any) {
             console.error("Error verifying code:", err.errors ? err.errors[0].message : err);

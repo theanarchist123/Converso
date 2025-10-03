@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!adminData.permissions?.includes('view_users')) {
+    // Allow all admins to view users (default permission)
+    const hasPermission = !adminData.permissions || adminData.permissions.length === 0 || adminData.permissions.includes('view_users');
+    
+    if (!hasPermission) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 

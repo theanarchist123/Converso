@@ -1,9 +1,9 @@
 'use client';
 
-import { useSignUp } from '@clerk/nextjs';
+import { useSignUp, useUser } from '@clerk/nextjs';
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
@@ -13,8 +13,24 @@ export default function Page() {
     const [error, setError] = useState('');
     const [pendingVerification, setPendingVerification] = useState(false);
     const { signUp, setActive } = useSignUp();
+    const { user, isLoaded } = useUser();
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    // Check if user is banned - redirect to banned page immediately
+    useEffect(() => {
+        if (isLoaded && user) {
+            const isBanned = (user.publicMetadata as any)?.status === 'banned';
+            if (isBanned) {
+                console.log('🚫 Banned user detected on sign-up page, redirecting to /banned');
+                router.push('/banned');
+            } else {
+                // If logged in and not banned, redirect to app
+                console.log('✅ User already logged in, redirecting to /app');
+                router.push('/app');
+            }
+        }
+    }, [user, isLoaded, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +57,7 @@ export default function Page() {
 
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
-                router.push('/');
+                router.push('/app');
                 return;
             }
 
@@ -91,7 +107,7 @@ export default function Page() {
             
             if (result?.status === "complete") {
                 await setActive({ session: result.createdSessionId });
-                router.push("/");
+                router.push("/app");
             } else {
                 setError("Error verifying email. Please try again.");
             }
