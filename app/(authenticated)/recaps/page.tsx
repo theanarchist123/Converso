@@ -123,7 +123,7 @@ const RecapsPage = () => {
                                     <div className="flex items-center gap-2">
                                         <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div 
-                                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"
+                                                className="h-full bg-gradient-to-r from-blue-500 to-primary rounded-full transition-all duration-500"
                                                 style={{ width: `${Math.min((recaps.length / 10) * 100, 100)}%` }}
                                             />
                                         </div>
@@ -141,8 +141,8 @@ const RecapsPage = () => {
                 <div className="mb-8">
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-purple-600">
+                            <div className="w-8 h-8 bg-gradient-to-br from-primary/10 to-pink-100 rounded-full flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-primary">
                                     <path d="M3 6L5 6M5 6C5 7.10457 5.89543 8 7 8C8.10457 8 9 7.10457 9 6C9 4.89543 8.10457 4 7 4C5.89543 4 5 4.89543 5 6ZM5 6L21 6M9 12L11 12M11 12C11 13.1046 11.8954 14 13 14C14.1046 14 15 13.1046 15 12C15 10.8954 14.1046 10 13 10C11.8954 10 11 10.8954 11 12ZM11 12L3 12M11 12L21 12M15 18L17 18M17 18C17 19.1046 17.8954 20 19 20C20.1046 20 21 19.1046 21 18C21 16.8954 20.1046 16 19 16C17.8954 16 17 16.8954 17 18ZM17 18L3 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
@@ -230,7 +230,7 @@ const RecapsPage = () => {
                                     )}
                                     {selectedSubject !== 'all' && (
                                         <span className="flex items-center gap-1">
-                                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                                             Subject: {selectedSubject}
                                         </span>
                                     )}
@@ -245,13 +245,13 @@ const RecapsPage = () => {
                 <div className="text-center py-20">
                     <div className="relative inline-block mb-8">
                         <div className="w-40 h-40 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto relative overflow-hidden shadow-lg">
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-purple-500/5 animate-pulse"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-primary/10 animate-pulse"></div>
                             <Image src="/icons/cap.svg" alt="Education" width={56} height={56} className="opacity-60 relative z-10" />
                         </div>
                         <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl flex items-center justify-center shadow-lg animate-bounce-gentle">
                             <span className="text-3xl">📚</span>
                         </div>
-                        <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center shadow-lg animate-bounce-gentle" style={{ animationDelay: '0.5s' }}>
+                        <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-gradient-to-br from-blue-100 to-primary/20 rounded-2xl flex items-center justify-center shadow-lg animate-bounce-gentle" style={{ animationDelay: '0.5s' }}>
                             <span className="text-2xl">🧠</span>
                         </div>
                         <div className="absolute top-0 left-0 w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-md animate-pulse" style={{ animationDelay: '1s' }}>
@@ -411,7 +411,7 @@ const RecapsPage = () => {
                             </div>
                             
                             {/* Hover indicator line */}
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
                         </div>
                     ))}
                 </div>

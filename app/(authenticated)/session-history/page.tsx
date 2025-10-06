@@ -153,8 +153,8 @@ const SessionHistory = () => {
                                 <div className="text-sm text-gray-600">Total Messages</div>
                             </div>
                             <div className="text-center">
-                                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-purple-600">
+                                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
                                         <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12ZM12 14C8.13401 14 5 17.134 5 21V22H19V21C19 17.134 15.866 14 12 14Z" stroke="currentColor" strokeWidth="2"/>
                                     </svg>
                                 </div>
@@ -247,8 +247,8 @@ const SessionHistory = () => {
             {sessions.length === 0 ? (
                 <div className="text-center py-20">
                     <div className="relative inline-block mb-8 animate-bounce-gentle">
-                        <div className="w-32 h-32 bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                            <div className="w-20 h-20 bg-gradient-to-br from-purple-200 to-indigo-200 rounded-full flex items-center justify-center">
+                        <div className="w-32 h-32 bg-gradient-to-br from-primary/10 via-primary/5 to-blue-50 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/30 rounded-full flex items-center justify-center">
                                 <Image src="/icons/history.svg" alt="No history" width={40} height={40} className="opacity-60" />
                             </div>
                         </div>
@@ -314,7 +314,7 @@ const SessionHistory = () => {
                             }}
                         >
                             {/* Gradient overlay for visual interest */}
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/5 via-blue-500/5 to-purple-500/5 rounded-bl-full opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/5 via-blue-500/5 to-primary/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             
                             {/* Header with companion name and time */}
@@ -382,10 +382,10 @@ const SessionHistory = () => {
                             </div>
                             
                             {/* Enhanced hover indicator line */}
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full"></div>
                             
                             {/* Subtle hover glow effect */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500 -z-10"></div>
+                            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-blue-500/20 to-primary/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500 -z-10"></div>
                         </div>
                     ))}
                 </div>
@@ -404,7 +404,7 @@ const SessionHistory = () => {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 via-white to-gray-50">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-primary/10 via-blue-500/10 to-purple-500/10 rounded-2xl flex items-center justify-center shadow-sm">
+                                <div className="w-14 h-14 bg-gradient-to-br from-primary/10 via-blue-500/10 to-primary/20 rounded-2xl flex items-center justify-center shadow-sm">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
                                         <path d="M8 12H16M12 8V16M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="1.5"/>
                                     </svg>

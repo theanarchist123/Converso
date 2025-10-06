@@ -107,60 +107,75 @@ interface PieChartInteractiveProps {
 export function PieChartInteractive({ data }: PieChartInteractiveProps) {
   const id = "pie-interactive"
   
-  // Transform data to match the format needed
+  // Transform data to match the format needed - ENSURE ALL 12 MONTHS
   const chartData = React.useMemo(() => {
+    // Define all 12 months structure
+    const allMonths = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ]
+    
     if (data && data.length > 0) {
       // Check if data has the new structure with month and nested data array
       if (data[0]?.month && data[0]?.data) {
         console.log('🥧 PieChartInteractive received data for', data.length, 'months')
-        console.log('🥧 Sample data:', data.slice(0, 2))
-        console.log('🥧 All months:', data.map(d => d.month).join(', '))
+        console.log('🥧 Received months:', data.map(d => d.month).join(', '))
         
-        return data.map((monthData) => {
-          const monthKey = monthData.month.toLowerCase()
-          const totalUsers = monthData.data.reduce((sum: number, d: any) => sum + (d.users || 0), 0)
-          console.log(`📊 ${monthData.month}: ${totalUsers} total users`)
+        // Create a map of month data
+        const monthDataMap = new Map(
+          data.map((monthData) => [monthData.month.toLowerCase(), monthData])
+        )
+        
+        // Return all 12 months, using received data or empty data
+        return allMonths.map((monthKey) => {
+          const monthData = monthDataMap.get(monthKey)
           
-          return {
-            month: monthKey,
-            data: monthData.data, // Keep nested data for pie slices
-            fill: `var(--color-${monthKey})`,
+          if (monthData) {
+            const totalUsers = monthData.data.reduce((sum: number, d: any) => sum + (d.users || 0), 0)
+            console.log(`📊 ${monthKey}: ${totalUsers} total users (from data)`)
+            
+            return {
+              month: monthKey,
+              data: monthData.data,
+              fill: `var(--color-${monthKey})`,
+            }
+          } else {
+            // No data for this month, use empty data
+            console.log(`📊 ${monthKey}: No data, using empty`)
+            return {
+              month: monthKey,
+              data: [
+                { name: 'Active', users: 0, fill: '#8B5CF6' },
+                { name: 'Inactive', users: 0, fill: '#7C3AED' },
+                { name: 'New', users: 0, fill: '#A855F7' }
+              ],
+              fill: `var(--color-${monthKey})`,
+            }
           }
         })
       }
     }
-    console.log('⚠️ No valid data received, using default data')
-    return defaultData.map(item => ({ ...item, data: [item] }))
+    
+    console.log('⚠️ No valid data received, using all 12 months with empty data')
+    return allMonths.map((monthKey) => ({
+      month: monthKey,
+      data: [
+        { name: 'Active', users: 0, fill: '#8B5CF6' },
+        { name: 'Inactive', users: 0, fill: '#7C3AED' },
+        { name: 'New', users: 0, fill: '#A855F7' }
+      ],
+      fill: `var(--color-${monthKey})`,
+    }))
   }, [data])
 
-  // Default to current month, or first month with data as fallback
+  // Default to current month (October 2025)
   const defaultMonth = React.useMemo(() => {
-    // Get current month name
     const currentDate = new Date()
     const currentMonthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(currentDate).toLowerCase()
     
-    // Check if current month exists in data
-    const currentMonthData = chartData.find(item => item.month === currentMonthName)
-    
-    if (currentMonthData) {
-      // Use current month if it has any data
-      const totalUsers = currentMonthData.data?.reduce((sum: number, d: any) => sum + (d.users || 0), 0) || 0
-      if (totalUsers > 0) {
-        console.log(`🎯 Defaulting to current month: ${currentMonthName}`)
-        return currentMonthName
-      }
-    }
-    
-    // Fallback: find first month with actual data
-    const monthWithData = chartData.find(item => {
-      const totalUsers = item.data?.reduce((sum: number, d: any) => sum + (d.users || 0), 0) || 0
-      return totalUsers > 0
-    })
-    
-    const selectedMonth = monthWithData?.month || chartData[0]?.month || 'january'
-    console.log(`🎯 Defaulting to first month with data: ${selectedMonth}`)
-    return selectedMonth
-  }, [chartData])
+    console.log(`🎯 Defaulting to current month: ${currentMonthName}`)
+    return currentMonthName
+  }, [])
 
   const [activeMonth, setActiveMonth] = React.useState(defaultMonth)
 
@@ -205,8 +220,14 @@ export function PieChartInteractive({ data }: PieChartInteractiveProps) {
           <SelectContent align="end" className="rounded-xl bg-black border-violet-600">
             {months.map((key) => {
               const config = chartConfig[key as keyof typeof chartConfig]
+              
+              // Calculate total users for this month
+              const monthData = chartData.find(item => item.month === key)
+              const totalUsers = monthData?.data?.reduce((sum: number, d: any) => sum + (d.users || 0), 0) || 0
+              const hasData = totalUsers > 0
 
               if (!config) {
+                console.warn(`⚠️ No config found for month: ${key}`)
                 return null
               }
 
@@ -223,7 +244,8 @@ export function PieChartInteractive({ data }: PieChartInteractiveProps) {
                         backgroundColor: `var(--color-${key})`,
                       }}
                     />
-                    {config?.label}
+                    <span>{config?.label}</span>
+                    {!hasData && <span className="text-gray-500 ml-1">(No data)</span>}
                   </div>
                 </SelectItem>
               )
@@ -305,7 +327,7 @@ export function PieChartInteractive({ data }: PieChartInteractiveProps) {
           </ChartContainer>
         ) : (
           <div className="flex items-center justify-center h-64 text-violet-400">
-            <p>No data available for {activeMonth}</p>
+            <p>No data available for {activeMonth.charAt(0).toUpperCase() + activeMonth.slice(1)}</p>
           </div>
         )}
       </CardContent>
