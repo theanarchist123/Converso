@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import BanStatusMonitor from "@/components/BanStatusMonitor";
+import { BanListener } from "@/components/BanListener";
 
 export default function AuthenticatedLayout({
     children,
@@ -9,6 +10,7 @@ export default function AuthenticatedLayout({
     return (
         <>
             <BanStatusMonitor />
+            <BanListener />
             <Navbar />
             {children}
         </>

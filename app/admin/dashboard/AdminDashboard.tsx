@@ -13,7 +13,8 @@ import {
   BarChart3,
   AlertTriangle,
   Search,
-  Filter
+  Filter,
+  Activity
 } from 'lucide-react'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,7 +39,10 @@ import {
 import { BarChartComponent as BarChart } from '@/components/charts/BarChart'
 import { PieChartInteractive } from '@/components/charts/PieChartInteractive'
 import { LineChartComponent as LineChart } from '@/components/charts/LineChart'
+import AdvancedAnalytics from '@/components/AdvancedAnalytics'
 import { RadarChartComponent as RadarChart } from '@/components/charts/RadarChart'
+import { LiveAdminPanel } from '@/components/LiveAdminPanel'
+import { DevAdminPanel } from '@/components/DevAdminPanel'
 
 interface UserData {
   id: string
@@ -701,7 +705,8 @@ export default function AdminDashboard() {
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
                 { id: 'users', label: 'User Management', icon: Users },
                 { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-                { id: 'settings', label: 'Settings', icon: Settings }
+                { id: 'advanced', label: 'Advanced Analytics', icon: Settings },
+                { id: 'realtime', label: 'Real-time Control', icon: Activity }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -1072,20 +1077,31 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'settings' && (
+            {activeTab === 'advanced' && (
               <motion.div
-                key="settings"
+                key="advanced"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-2xl font-bold text-violet-300 mb-6">System Settings</h2>
-                <Card className="bg-black border-violet-600">
-                  <CardContent className="pt-6">
-                    <p className="text-violet-400">Settings panel coming soon...</p>
-                  </CardContent>
-                </Card>
+                <AdvancedAnalytics />
+              </motion.div>
+            )}
+
+            {activeTab === 'realtime' && (
+              <motion.div
+                key="realtime"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {process.env.NODE_ENV === 'development' ? (
+                  <DevAdminPanel />
+                ) : (
+                  <LiveAdminPanel />
+                )}
               </motion.div>
             )}
           </AnimatePresence>
