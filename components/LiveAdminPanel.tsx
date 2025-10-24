@@ -34,13 +34,19 @@ export function LiveAdminPanel({ className }: LiveAdminPanelProps) {
     connectionError,
     messages,
     broadcast, 
-    banUser, 
-    refreshAnalytics 
+    refreshAnalytics,
+    announce,
+    forceReload,
+    setReadOnly
   } = useAdminWS()
 
   const [broadcastMessage, setBroadcastMessage] = useState('')
-  const [banUserId, setBanUserId] = useState('')
-  const [banReason, setBanReason] = useState('Policy violation')
+  const [announcementTitle, setAnnouncementTitle] = useState('')
+  const [announcementBody, setAnnouncementBody] = useState('')
+  const [announcementTTL, setAnnouncementTTL] = useState(60)
+  const [reloadReason, setReloadReason] = useState('System update')
+  const [readOnlyEnabled, setReadOnlyEnabled] = useState(false)
+  const [readOnlyReason, setReadOnlyReason] = useState('Maintenance')
   const [isLoading, setIsLoading] = useState(false)
 
   // Connection status
@@ -62,14 +68,33 @@ export function LiveAdminPanel({ className }: LiveAdminPanelProps) {
     setIsLoading(false)
   }
 
-  const handleBanUser = async () => {
-    if (!banUserId.trim()) return
+  const handleAnnouncement = async () => {
+    if (!announcementTitle.trim() || !announcementBody.trim()) return
     setIsLoading(true)
     
-    const success = await banUser(banUserId, banReason)
+    const success = await announce(announcementTitle, announcementBody, announcementTTL)
     if (success) {
-      setBanUserId('')
-      setBanReason('Policy violation')
+      setAnnouncementTitle('')
+      setAnnouncementBody('')
+      setAnnouncementTTL(60)
+    }
+    setIsLoading(false)
+  }
+
+  const handleForceReload = async () => {
+    if (!confirm('This will force all clients to reload. Continue?')) return
+    setIsLoading(true)
+    
+    await forceReload(reloadReason)
+    setIsLoading(false)
+  }
+
+  const handleReadOnlyToggle = async () => {
+    setIsLoading(true)
+    
+    const success = await setReadOnly(!readOnlyEnabled, readOnlyReason)
+    if (success) {
+      setReadOnlyEnabled(!readOnlyEnabled)
     }
     setIsLoading(false)
   }
@@ -143,15 +168,27 @@ export function LiveAdminPanel({ className }: LiveAdminPanelProps) {
           
           {connectionError && (
             <div className="mt-3 p-3 bg-red-950/20 border border-red-600 rounded text-red-400 text-xs space-y-2">
-              <div className="font-semibold">WebSocket Error: {connectionError}</div>
-              {process.env.NODE_ENV === 'development' && connectionError.includes('dev server') && (
+              <div className="font-semibold">Connection Error: {connectionError}</div>
+              {connectionError.includes('Supabase') && (
                 <div className="space-y-1 text-yellow-400">
-                  <div className="font-semibold">Development Mode Solutions:</div>
-                  <div>• Build for production: <code className="bg-black/20 px-1 rounded">npm run build && npm start</code></div>
-                  <div>• Use ngrok for dev: <code className="bg-black/20 px-1 rounded">ngrok http 3000</code></div>
-                  <div>• Supabase Realtime will still work for live data updates</div>
+                  <div className="font-semibold">Check:</div>
+                  <div>• NEXT_PUBLIC_SUPABASE_URL is set in .env.local</div>
+                  <div>• NEXT_PUBLIC_SUPABASE_ANON_KEY is set in .env.local</div>
+                  <div>• Restart dev server after adding env vars</div>
+                  <div>• Check browser console for detailed logs</div>
                 </div>
               )}
+            </div>
+          )}
+          
+          {/* Debug Info */}
+          {!wsConnected && !isConnecting && (
+            <div className="mt-3 p-3 bg-yellow-950/20 border border-yellow-600 rounded text-yellow-300 text-xs">
+              <div className="font-semibold mb-1">⚠️ Controls are disabled because connection is not established</div>
+              <div className="space-y-1">
+                <div>Status: {isConnecting ? 'Connecting...' : 'Disconnected'}</div>
+                <div>Check browser console (F12) for connection logs</div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -213,83 +250,138 @@ export function LiveAdminPanel({ className }: LiveAdminPanelProps) {
         </CardContent>
       </Card>
 
-      {/* Admin Commands */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Broadcast Message */}
-        <Card className="bg-black border-violet-600">
+      {/* Real-Time Controls */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Global Announcement */}
+        <Card className="bg-black border-blue-600">
           <CardHeader>
-            <CardTitle className="text-violet-300 flex items-center gap-2">
-              <Send className="h-5 w-5" />
-              Admin Broadcast
+            <CardTitle className="text-blue-300 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Global Announcement
             </CardTitle>
-            <CardDescription className="text-violet-400">
-              Send instant message to all admin dashboards
+            <CardDescription className="text-blue-400">
+              Show banner to all users
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <label className="text-sm text-violet-300">Message</label>
+              <label className="text-sm text-blue-300">Title</label>
               <input
                 type="text"
-                value={broadcastMessage}
-                onChange={(e) => setBroadcastMessage(e.target.value)}
-                placeholder="Enter broadcast message..."
-                className="w-full px-3 py-2 bg-violet-950/20 border border-violet-600 rounded text-white placeholder-violet-400 text-sm"
+                value={announcementTitle}
+                onChange={(e) => setAnnouncementTitle(e.target.value)}
+                placeholder="e.g., Maintenance"
+                className="w-full px-3 py-2 bg-blue-950/20 border border-blue-600 rounded text-white placeholder-blue-400 text-sm"
+                disabled={!wsConnected}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-blue-300">Message</label>
+              <textarea
+                value={announcementBody}
+                onChange={(e) => setAnnouncementBody(e.target.value)}
+                placeholder="Enter announcement..."
+                rows={3}
+                className="w-full px-3 py-2 bg-blue-950/20 border border-blue-600 rounded text-white placeholder-blue-400 text-sm resize-none"
+                disabled={!wsConnected}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-blue-300">Duration (seconds)</label>
+              <input
+                type="number"
+                value={announcementTTL}
+                onChange={(e) => setAnnouncementTTL(parseInt(e.target.value) || 60)}
+                min="10"
+                max="300"
+                className="w-full px-3 py-2 bg-blue-950/20 border border-blue-600 rounded text-white text-sm"
                 disabled={!wsConnected}
               />
             </div>
             <Button
-              onClick={handleBroadcast}
-              disabled={!wsConnected || !broadcastMessage.trim() || isLoading}
-              className="w-full bg-violet-600 hover:bg-violet-700"
+              onClick={handleAnnouncement}
+              disabled={!wsConnected || !announcementTitle.trim() || !announcementBody.trim() || isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               <Send className="h-3 w-3 mr-1" />
-              Send Broadcast
+              Send Announcement
             </Button>
           </CardContent>
         </Card>
 
-        {/* Ban User */}
-        <Card className="bg-black border-red-600">
+        {/* Force Reload */}
+        <Card className="bg-black border-orange-600">
           <CardHeader>
-            <CardTitle className="text-red-300 flex items-center gap-2">
-              <Ban className="h-5 w-5" />
-              Instant User Ban
+            <CardTitle className="text-orange-300 flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              Force Client Reload
             </CardTitle>
-            <CardDescription className="text-red-400">
-              Immediately ban user and force logout
+            <CardDescription className="text-orange-400">
+              Refresh all connected clients
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <label className="text-sm text-red-300">User ID</label>
+              <label className="text-sm text-orange-300">Reason</label>
               <input
                 type="text"
-                value={banUserId}
-                onChange={(e) => setBanUserId(e.target.value)}
-                placeholder="Enter user ID to ban..."
-                className="w-full px-3 py-2 bg-red-950/20 border border-red-600 rounded text-white placeholder-red-400 text-sm"
+                value={reloadReason}
+                onChange={(e) => setReloadReason(e.target.value)}
+                placeholder="e.g., Deploy hotfix"
+                className="w-full px-3 py-2 bg-orange-950/20 border border-orange-600 rounded text-white placeholder-orange-400 text-sm"
                 disabled={!wsConnected}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm text-red-300">Reason</label>
-              <input
-                type="text"
-                value={banReason}
-                onChange={(e) => setBanReason(e.target.value)}
-                placeholder="Ban reason..."
-                className="w-full px-3 py-2 bg-red-950/20 border border-red-600 rounded text-white placeholder-red-400 text-sm"
-                disabled={!wsConnected}
-              />
+            <div className="p-3 bg-orange-950/20 border border-orange-600 rounded text-orange-300 text-xs">
+              ⚠️ This will immediately reload all client browsers. Use with caution!
             </div>
             <Button
-              onClick={handleBanUser}
-              disabled={!wsConnected || !banUserId.trim() || isLoading}
-              className="w-full bg-red-600 hover:bg-red-700"
+              onClick={handleForceReload}
+              disabled={!wsConnected || isLoading}
+              className="w-full bg-orange-600 hover:bg-orange-700"
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Force Reload All
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Read-Only Mode */}
+        <Card className="bg-black border-purple-600">
+          <CardHeader>
+            <CardTitle className="text-purple-300 flex items-center gap-2">
+              <Ban className="h-5 w-5" />
+              Read-Only Mode
+            </CardTitle>
+            <CardDescription className="text-purple-400">
+              Disable forms/actions globally
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <label className="text-sm text-purple-300">Reason</label>
+              <input
+                type="text"
+                value={readOnlyReason}
+                onChange={(e) => setReadOnlyReason(e.target.value)}
+                placeholder="e.g., Maintenance window"
+                className="w-full px-3 py-2 bg-purple-950/20 border border-purple-600 rounded text-white placeholder-purple-400 text-sm"
+                disabled={!wsConnected}
+              />
+            </div>
+            <div className="flex items-center justify-between p-3 bg-purple-950/20 border border-purple-600 rounded">
+              <span className="text-sm text-purple-300">Current Status:</span>
+              <Badge className={readOnlyEnabled ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}>
+                {readOnlyEnabled ? 'READ-ONLY' : 'NORMAL'}
+              </Badge>
+            </div>
+            <Button
+              onClick={handleReadOnlyToggle}
+              disabled={!wsConnected || isLoading}
+              className={`w-full ${readOnlyEnabled ? 'bg-green-600 hover:bg-green-700' : 'bg-purple-600 hover:bg-purple-700'}`}
             >
               <Ban className="h-3 w-3 mr-1" />
-              Execute Ban
+              {readOnlyEnabled ? 'Disable Read-Only' : 'Enable Read-Only'}
             </Button>
           </CardContent>
         </Card>

@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Commented out for simpler Docker build
+  // output: 'standalone',
+  
   typescript: {
     ignoreBuildErrors: true
   },

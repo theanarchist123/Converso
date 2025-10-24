@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
+import { supabaseRealtime } from '@/lib/supabase-realtime'
 
 // Types for WebSocket messages
 interface WSMessage {
@@ -12,7 +13,13 @@ interface WSMessage {
 }
 
 interface AdminCommand {
-  type: 'admin:broadcast' | 'admin:ban_user' | 'admin:refresh_analytics'
+  type: 
+    | 'admin:broadcast'
+    | 'admin:ban_user' 
+    | 'admin:refresh_analytics'
+    | 'admin:announce'
+    | 'admin:force_reload'
+    | 'admin:read_only'
   data?: any
 }
 
@@ -45,6 +52,11 @@ interface UseAdminWSReturn {
   banUser: (userId: string, reason?: string) => Promise<boolean>
   refreshAnalytics: () => Promise<boolean>
   
+  // New simple controls
+  announce: (title: string, body: string, ttlSec?: number) => Promise<boolean>
+  forceReload: (reason?: string) => Promise<boolean>
+  setReadOnly: (enabled: boolean, reason?: string) => Promise<boolean>
+  
   // Connection management
   connect: () => void
   disconnect: () => void
@@ -60,10 +72,8 @@ export function useAdminWS(options: UseAdminWSOptions = {}): UseAdminWSReturn {
     reconnectDelay = 2000
   } = options
 
-  const { getToken, userId } = useAuth()
-  const wsRef = useRef<WebSocket | null>(null)
-  const reconnectCountRef = useRef(0)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { userId } = useAuth()
+  const channelRef = useRef<ReturnType<typeof supabaseRealtime.channel> | null>(null)
   const messageListenersRef = useRef<Set<(message: WSMessage) => void>>(new Set())
 
   const [isConnected, setIsConnected] = useState(false)
@@ -85,184 +95,173 @@ export function useAdminWS(options: UseAdminWSOptions = {}): UseAdminWSReturn {
     })
   }, [])
 
-  // Send command to WebSocket
+  // Send command via Supabase Realtime
   const sendCommand = useCallback(async (command: AdminCommand): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket not connected')
-        resolve(false)
-        return
-      }
+    if (!channelRef.current) {
+      console.error('Supabase channel not connected')
+      setConnectionError('Not connected')
+      return false
+    }
 
-      try {
-        wsRef.current.send(JSON.stringify(command))
-        console.log('📤 Sent admin command:', command.type)
-        resolve(true)
-      } catch (error) {
-        console.error('Failed to send command:', error)
-        resolve(false)
-      }
-    })
+    try {
+      await channelRef.current.send({
+        type: 'broadcast',
+        event: 'admin',
+        payload: {
+          type: command.type,
+          data: command.data,
+          timestamp: Date.now()
+        }
+      })
+      console.log('📤 Sent admin command via Supabase:', command.type)
+      return true
+    } catch (error) {
+      console.error('Failed to send command:', error)
+      setConnectionError('Failed to send')
+      return false
+    }
   }, [])
 
   // Admin command functions
   const broadcast = useCallback((message: string) => 
     sendCommand({ type: 'admin:broadcast', data: { message } }), [sendCommand])
 
-  const banUser = useCallback((userId: string, reason = 'Policy violation') => 
-    sendCommand({ type: 'admin:ban_user', data: { userId, reason } }), [sendCommand])
+  const banUser = useCallback(async (userId: string, reason = 'Policy violation') => {
+    try {
+      const token = localStorage.getItem('admin_token')
+      const res = await fetch('/api/admin/ban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+        body: JSON.stringify({ userId, reason })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Ban failed')
+
+      addMessage({ type: 'ban_executed', data: { targetUserId: userId, reason, success: true }, timestamp: Date.now() })
+      return true
+    } catch (e: any) {
+      addMessage({ type: 'ban_executed', error: e.message || 'Ban failed', timestamp: Date.now() })
+      return false
+    }
+  }, [addMessage])
 
   const refreshAnalytics = useCallback(() => 
     sendCommand({ type: 'admin:refresh_analytics' }), [sendCommand])
 
-  // Create WebSocket connection
-  const createConnection = useCallback(async () => {
-    if (isConnecting || isConnected) return
-    if (!userId) {
-      console.log('⏳ Waiting for user authentication...')
+  // New simple controls
+  const announce = useCallback(
+    (title: string, body: string, ttlSec = 60) =>
+      sendCommand({ type: 'admin:announce', data: { title, body, ttlSec } }),
+    [sendCommand]
+  )
+
+  const forceReload = useCallback(
+    (reason = 'Admin-triggered update') =>
+      sendCommand({ type: 'admin:force_reload', data: { reason } }),
+    [sendCommand]
+  )
+
+  const setReadOnly = useCallback(
+    (enabled: boolean, reason?: string) =>
+      sendCommand({ type: 'admin:read_only', data: { enabled, reason } }),
+    [sendCommand]
+  )
+
+  // Connect to Supabase Realtime channel
+  const connect = useCallback(() => {
+    if (channelRef.current) {
+      console.log('⏭️ Already connected, skipping')
       return
     }
 
     setIsConnecting(true)
     setConnectionError(null)
 
-    try {
-      // Get auth token
-      const token = await getToken()
-      if (!token) {
-        throw new Error('Failed to get authentication token')
-      }
+    console.log('🔌 Connecting to Supabase Realtime admin channel...')
+    console.log('📍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('📍 Supabase Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-      // Create WebSocket connection
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const wsUrl = `${protocol}//${window.location.host}/api/ws`
-      
-      console.log('🔌 Connecting to WebSocket:', wsUrl)
-      console.log('📍 Environment:', process.env.NODE_ENV)
-      
-      // Check if we're in development
-      const isDev = process.env.NODE_ENV === 'development'
-      if (isDev) {
-        console.log('⚠️ Development mode: WebSocket may not work with Next.js dev server')
-      }
-      
-      const ws = new WebSocket(wsUrl)
-      wsRef.current = ws
-
-      // Connection opened
-      ws.onopen = () => {
-        console.log('✅ WebSocket connected, authenticating...')
-        
-        // Send authentication
-        ws.send(JSON.stringify({ 
-          type: 'auth', 
-          token: `admin.${token}` // Add admin prefix for now - replace with proper admin check
-        }))
-      }
-
-      // Handle messages
-      ws.onmessage = (event) => {
-        try {
-          const message: WSMessage = JSON.parse(event.data)
-          console.log('📥 WebSocket message:', message)
-          
-          addMessage(message)
-
-          // Handle specific message types
-          switch (message.type) {
-            case 'auth:success':
-              setIsConnected(true)
-              setIsConnecting(false)
-              reconnectCountRef.current = 0
-              console.log('🎉 WebSocket authenticated successfully')
-              break
-
-            case 'auth:error':
-              setConnectionError(message.error || 'Authentication failed')
-              setIsConnecting(false)
-              ws.close()
-              break
-
-            case 'broadcast':
-              console.log('📢 Admin broadcast received:', message.data)
-              break
-
-            case 'ban_executed':
-              console.log('🔨 Ban executed:', message.data)
-              break
-
-            case 'analytics_refresh':
-              console.log('📊 Analytics refresh triggered:', message.data)
-              break
-          }
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error)
-        }
-      }
-
-      // Connection closed
-      ws.onclose = (event) => {
-        console.log('🔌 WebSocket closed:', event.code, event.reason)
-        setIsConnected(false)
-        setIsConnecting(false)
-        wsRef.current = null
-
-        // Attempt reconnection if not a clean close
-        if (event.code !== 1000 && reconnectCountRef.current < reconnectAttempts) {
-          reconnectCountRef.current++
-          console.log(`🔄 Reconnecting... (${reconnectCountRef.current}/${reconnectAttempts})`)
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            createConnection()
-          }, reconnectDelay * reconnectCountRef.current)
-        }
-      }
-
-      // Connection error
-      ws.onerror = (error) => {
-        console.error('❌ WebSocket error:', error)
-        
-        const isDev = process.env.NODE_ENV === 'development'
-        const errorMsg = isDev 
-          ? 'WebSocket failed: Next.js dev server may not support WebSocket. Try production build or use ngrok.'
-          : 'WebSocket connection failed'
-          
-        setConnectionError(errorMsg)
-        setIsConnecting(false)
-      }
-
-    } catch (error) {
-      console.error('Failed to create WebSocket connection:', error)
-      setConnectionError(error instanceof Error ? error.message : 'Connection failed')
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const error = 'Missing Supabase environment variables'
+      console.error('❌', error)
+      setConnectionError(error)
       setIsConnecting(false)
+      return
     }
-  }, [userId, getToken, isConnecting, isConnected, reconnectAttempts, reconnectDelay, addMessage])
 
-  // Connect function
-  const connect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-      reconnectTimeoutRef.current = null
-    }
-    reconnectCountRef.current = 0
-    createConnection()
-  }, [createConnection])
+    const ch = supabaseRealtime.channel('admin_commands', {
+      config: { broadcast: { self: true } }
+    })
 
-  // Disconnect function
+    console.log('📡 Channel created, setting up listeners...')
+
+    // Listen for admin broadcasts
+    ch.on('broadcast', { event: 'admin' }, (payload) => {
+      const msg: WSMessage = payload.payload
+      console.log('📥 Supabase broadcast message:', msg)
+      
+      addMessage(msg)
+
+      // Handle specific message types
+      switch (msg.type) {
+        case 'admin:broadcast':
+          console.log('📢 Admin broadcast received:', msg.data)
+          break
+        case 'ban_executed':
+          console.log('🔨 Ban executed:', msg.data)
+          break
+        case 'analytics_refresh':
+          console.log('📊 Analytics refresh triggered:', msg.data)
+          break
+        case 'announce:ack':
+          console.log('� Announcement acknowledged:', msg.data)
+          break
+        case 'client:reloading':
+          console.log('♻️ Client acknowledged reload:', msg.data)
+          break
+        case 'read_only:applied':
+          console.log('� Read-only applied:', msg.data)
+          break
+      }
+    })
+
+    // Subscribe to channel
+    ch.subscribe((status) => {
+      console.log('� Supabase channel status:', status)
+      
+      if (status === 'SUBSCRIBED') {
+        setIsConnecting(false)
+        setIsConnected(true)
+        addMessage({ 
+          type: 'auth:success', 
+          data: { message: 'Supabase Realtime channel connected' }, 
+          timestamp: Date.now() 
+        })
+        console.log('🎉 Successfully subscribed to admin channel')
+      } else if (status === 'CHANNEL_ERROR') {
+        setIsConnecting(false)
+        setIsConnected(false)
+        setConnectionError('Failed to connect to Supabase Realtime')
+      } else if (status === 'TIMED_OUT') {
+        setIsConnecting(false)
+        setIsConnected(false)
+        setConnectionError('Connection timeout')
+      }
+    })
+
+    channelRef.current = ch
+  }, [addMessage])
+
+  // Disconnect from Supabase Realtime
   const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-      reconnectTimeoutRef.current = null
-    }
-    
-    if (wsRef.current) {
-      wsRef.current.close(1000, 'Manual disconnect')
-      wsRef.current = null
+    if (channelRef.current) {
+      console.log('🔌 Disconnecting from Supabase Realtime...')
+      channelRef.current.unsubscribe()
+      channelRef.current = null
     }
     
     setIsConnected(false)
     setIsConnecting(false)
-    reconnectCountRef.current = 0
   }, [])
 
   // Message listener management
@@ -274,29 +273,17 @@ export function useAdminWS(options: UseAdminWSOptions = {}): UseAdminWSReturn {
     }
   }, [])
 
-  // Auto-connect effect (disabled in development)
+  // Auto-connect effect
   useEffect(() => {
-    const isDev = process.env.NODE_ENV === 'development'
-    
-    if (autoConnect && userId && !isDev) {
-      console.log('🔌 WebSocket auto-connect enabled for production')
+    if (autoConnect) {
+      console.log('🔌 Supabase Realtime auto-connect enabled')
       connect()
-    } else if (isDev) {
-      console.log('⚠️ WebSocket disabled in development mode')
-      setConnectionError('WebSocket disabled in development - Supabase Realtime active')
     }
 
     return () => {
       disconnect()
     }
-  }, [autoConnect, userId]) // Only re-run when userId changes
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnect()
-    }
-  }, [])
+  }, [autoConnect, connect, disconnect])
 
   return {
     isConnected,
@@ -306,6 +293,12 @@ export function useAdminWS(options: UseAdminWSOptions = {}): UseAdminWSReturn {
     broadcast,
     banUser,
     refreshAnalytics,
+    
+    // New simple controls
+    announce,
+    forceReload,
+    setReadOnly,
+    
     connect,
     disconnect,
     onMessage
