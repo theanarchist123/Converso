@@ -1,0 +1,27 @@
+# Code Owners for Converso Project
+# These owners will be automatically requested for review when someone opens a pull request.
+
+# Default owner for everything in the repo
+* @theanarchist123
+
+# Frontend components
+/components/** @theanarchist123
+/app/** @theanarchist123
+
+# API routes
+/app/api/** @theanarchist123
+
+# Database and backend
+/lib/** @theanarchist123
+/database/** @theanarchist123
+
+# Configuration files
+*.json @theanarchist123
+*.yml @theanarchist123
+*.yaml @theanarchist123
+
+# Documentation
+*.md @theanarchist123
+
+# CI/CD workflows
+/.github/workflows/** @theanarchist123
