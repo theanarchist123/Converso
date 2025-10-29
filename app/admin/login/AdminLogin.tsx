@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="pl-10 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
+                    className="pl-10 border-violet-200 focus:border-violet-500 focus:ring-violet-500 text-gray-900 placeholder:text-gray-400 bg-white"
                     placeholder="admin@example.com"
                     required
                     disabled={isLoading}
@@ -139,7 +139,7 @@ export default function AdminLoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
+                    className="pl-10 pr-10 border-violet-200 focus:border-violet-500 focus:ring-violet-500 text-gray-900 placeholder:text-gray-400 bg-white"
                     placeholder="Enter your password"
                     required
                     disabled={isLoading}

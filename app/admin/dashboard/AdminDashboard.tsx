@@ -658,7 +658,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <div className="min-h-screen h-full w-full bg-black text-white">
+      <div className="dark min-h-screen h-full w-full bg-black text-white">
         {/* Header */}
         <header className="bg-black border-b border-violet-600">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

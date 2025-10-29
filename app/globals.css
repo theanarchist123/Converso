@@ -140,7 +140,7 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-  main {
+  main:not(.marketing-page) {
     @apply mx-auto px-14 flex flex-col gap-8 bg-background h-full max-w-[1400px] pt-10 max-sm:px-2;
   }
   h1 {
@@ -149,6 +149,43 @@ body {
 }
 
 @layer components {
+  .marketing-page {
+    @apply relative bg-gradient-to-b from-black via-gray-900 to-black text-white;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    display: block !important;
+    gap: 0 !important;
+    flex-direction: unset !important;
+    width: 100vw !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure all child sections take full width */
+  .marketing-page > * {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* Smooth section transitions */
+  .marketing-section {
+    position: relative;
+    z-index: 1;
+    background: inherit;
+  }
+  
+  .marketing-section:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
   .home-section {
     @apply flex gap-4 justify-between items-start w-full max-lg:flex-col-reverse max-lg:items-center;
   }
