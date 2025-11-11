@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import BanStatusMonitor from "@/components/BanStatusMonitor";
 import { BanListener } from "@/components/BanListener";
+import ChatWidget from "@/components/chat/ChatWidget";
 
 export default function AuthenticatedLayout({
     children,
@@ -13,6 +14,7 @@ export default function AuthenticatedLayout({
             <BanListener />
             <Navbar />
             {children}
+            <ChatWidget />
         </>
     )
 }
