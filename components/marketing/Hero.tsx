@@ -13,11 +13,15 @@ export default function Hero() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const ctx = gsap.context(() => {
+      // Mark container as GSAP-controlled
+      root.current?.classList.add('gsap-animated')
+      
+      // Use fromTo for predictable behavior - elements start visible if JS fails
       const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } })
-      tl.from('.hero-kicker', { y: 20, opacity: 0 })
-        .from('.hero-line', { yPercent: 100, opacity: 0, stagger: 0.08 }, '-=0.3')
-        .from('.hero-subtitle', { y: 20, opacity: 0 }, '-=0.4')
-        .from('.hero-cta', { y: 20, opacity: 0, stagger: 0.1 }, '-=0.2')
+      tl.fromTo('.hero-kicker', { y: 20, opacity: 0 }, { y: 0, opacity: 1 })
+        .fromTo('.hero-line', { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: 0.08 }, '-=0.3')
+        .fromTo('.hero-subtitle', { y: 20, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.4')
+        .fromTo('.hero-cta', { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1 }, '-=0.2')
 
       // Parallax background blob
       gsap.to('.hero-blob', {
@@ -48,6 +52,22 @@ export default function Hero() {
 
   return (
     <section ref={root} className="relative bg-black pt-32 pb-24 min-h-screen flex items-center">
+      {/* Ensure all animated elements are visible by default */}
+      <style jsx global>{`
+        .hero-kicker, .hero-line, .hero-subtitle, .hero-cta {
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: none !important;
+        }
+        .gsap-animated .hero-kicker,
+        .gsap-animated .hero-line,
+        .gsap-animated .hero-subtitle,
+        .gsap-animated .hero-cta {
+          opacity: unset !important;
+          visibility: unset !important;
+          transform: unset !important;
+        }
+      `}</style>
       {/* Animated background blobs */}
       <div className="absolute inset-0 -z-10">
         <div className="hero-blob absolute top-0 right-0 w-[600px] h-[600px] opacity-30"
@@ -75,7 +95,8 @@ export default function Hero() {
           
           {/* Sign In Button - Always visible */}
           <Link href="/sign-in" 
-                className="hero-cta px-6 py-2.5 rounded-lg border border-white/20 text-white/90 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-300 font-medium">
+                className="hero-cta px-6 py-2.5 rounded-lg border border-white/20 text-white/90 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-300 font-medium"
+                style={{ opacity: 1 }}>
             Sign In
           </Link>
         </div>
@@ -101,13 +122,15 @@ export default function Hero() {
 
           <div className="mt-12 flex flex-wrap gap-4">
             <Link href="/sign-up" 
-                  className="hero-cta group relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 py-4 font-semibold text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 flex items-center gap-2">
+                  className="hero-cta group relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 py-4 font-semibold text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 flex items-center gap-2"
+                  style={{ opacity: 1 }}>
               <span>Get Started Free</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             
             <Link href="#features" 
-                  className="hero-cta group rounded-xl border-2 border-white/20 px-8 py-4 font-semibold text-white/90 hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center gap-2">
+                  className="hero-cta group rounded-xl border-2 border-white/20 px-8 py-4 font-semibold text-white/90 hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center gap-2"
+                  style={{ opacity: 1 }}>
               <span>Explore Features</span>
             </Link>
           </div>
