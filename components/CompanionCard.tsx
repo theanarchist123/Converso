@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from "next/image";
 import Link from "next/link";
 import { addBookmark, removeBookmark, deleteCompanion } from "@/lib/actions/companion.client";
 import { usePathname, useRouter } from "next/navigation";
+import { getSubjectColor } from "@/lib/utils";
+
 interface CompanionCardProps{
     id: string;
     name: string;
@@ -19,6 +21,25 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
     const pathname = usePathname();
     const router = useRouter();
     const [isDeleted, setIsDeleted] = useState(false);
+    const [bgColor, setBgColor] = useState(color);
+    
+    // Update color when theme changes
+    useEffect(() => {
+        const updateColor = () => {
+            setBgColor(getSubjectColor(subject));
+        };
+        
+        updateColor();
+        
+        // Listen for theme changes
+        const observer = new MutationObserver(updateColor);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        
+        return () => observer.disconnect();
+    }, [subject]);
     
     // If the component is deleted, don't render anything
     if (isDeleted) {
@@ -55,7 +76,7 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
     };
 
     return (
-        <article className="companion-card" style={{backgroundColor: color}}>
+        <article className="companion-card transition-colors duration-300" style={{backgroundColor: bgColor}}>
             <div className="flex justify-between items-center">
                 <div className="subject-badge">{subject}</div>
                 <div className="flex gap-2">

@@ -5,6 +5,9 @@ import {recentSessions} from "@/constants";
 import {getAllCompanions, getRecentSessions} from "@/lib/actions/companion.actions";
 import {getSubjectColor} from "@/lib/utils";
 
+// Force dynamic rendering since this page uses headers (via Clerk auth)
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
     const companions = await getAllCompanions({ limit: 3 });
     const recentSessionsCompanions = await getRecentSessions(10);

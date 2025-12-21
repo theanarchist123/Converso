@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState, useEffect } from 'react'
 import {
     Table,
     TableBody,
@@ -8,7 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {cn, getSubjectColor} from "@/lib/utils";
+import {cn, getSubjectColor, getSubjectLogoColor} from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -20,6 +22,33 @@ interface CompanionsListProps{
 }
 
 const CompanionList = ({title,companions,classNames}:CompanionsListProps) => {
+    const [colorMap, setColorMap] = useState<Record<string, string>>({});
+    const [logoColorMap, setLogoColorMap] = useState<Record<string, string>>({});
+    
+    useEffect(() => {
+        const updateColors = () => {
+            const newColorMap: Record<string, string> = {};
+            const newLogoColorMap: Record<string, string> = {};
+            companions?.forEach(({subject}) => {
+                newColorMap[subject] = getSubjectColor(subject);
+                newLogoColorMap[subject] = getSubjectLogoColor(subject);
+            });
+            setColorMap(newColorMap);
+            setLogoColorMap(newLogoColorMap);
+        };
+        
+        updateColors();
+        
+        // Listen for theme changes
+        const observer = new MutationObserver(updateColors);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        
+        return () => observer.disconnect();
+    }, [companions]);
+    
     return (
         <article className={cn('companion-list',classNames)}>
             <h2 className="font-bold text-3xl">{title}</h2>
@@ -38,8 +67,8 @@ const CompanionList = ({title,companions,classNames}:CompanionsListProps) => {
                             <TableCell>
                                 <Link href={`/companions/${id}`}>
                                     <div className="flex items-center gap-2">
-                                        <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden" style={{
-                                         backgroundColor:getSubjectColor(subject)
+                                        <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden transition-colors duration-300" style={{
+                                         backgroundColor: logoColorMap[subject] || getSubjectLogoColor(subject)
                                         }}>
                                             <Image
                                                 src={`/icons/${subject}.svg`}
@@ -58,7 +87,7 @@ const CompanionList = ({title,companions,classNames}:CompanionsListProps) => {
                                 <div className="subject-badge w-fit max-md:hidden">
                                     {subject}
                                 </div>
-                                <div className="flex items-center justify-center rounded-lg w-fit p-2 md:hidden" style={{backgroundColor:getSubjectColor(subject)}}>
+                                <div className="flex items-center justify-center rounded-lg w-fit p-2 md:hidden transition-colors duration-300" style={{backgroundColor: logoColorMap[subject] || getSubjectLogoColor(subject)}}>
                                     <Image
                                         src={`/icons/${subject}.svg`}
                                         alt={subject}

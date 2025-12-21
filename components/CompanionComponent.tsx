@@ -36,9 +36,28 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [showRecapModal, setShowRecapModal] = useState(false);
     const [currentRecap, setCurrentRecap] = useState<SessionRecap | null>(null);
     const [isGeneratingRecap, setIsGeneratingRecap] = useState(false);
+    const [bgColor, setBgColor] = useState(getSubjectColor(subject));
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const transcriptRef = useRef<HTMLDivElement>(null);
+    
+    // Update color when theme changes
+    useEffect(() => {
+        const updateColor = () => {
+            setBgColor(getSubjectColor(subject));
+        };
+        
+        updateColor();
+        
+        // Listen for theme changes
+        const observer = new MutationObserver(updateColor);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        
+        return () => observer.disconnect();
+    }, [subject]);
 
     // Auto-scroll to bottom when new messages are added
     useEffect(() => {
@@ -253,7 +272,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         <section className="flex flex-col h-[70vh]">
             <section className="flex gap-8 max-sm:flex-col">
                 <div className="companion-section">
-                    <div className="companion-avatar" style={{ backgroundColor: getSubjectColor(subject)}}>
+                    <div className="companion-avatar transition-colors duration-300" style={{ backgroundColor: bgColor}}>
                         <div
                             className={
                                 cn(

@@ -73,12 +73,12 @@ const RecapsPage = () => {
                 <div className="flex items-center justify-center min-h-[400px]">
                     <div className="text-center animate-pulse-scale">
                         <div className="relative mx-auto mb-6 w-16 h-16">
-                            <div className="absolute inset-0 animate-spin rounded-full border-4 border-gray-200"></div>
+                            <div className="absolute inset-0 animate-spin rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
                             <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary" style={{ animationDuration: '1s' }}></div>
                             <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-400" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }}></div>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading your learning recaps</h3>
-                        <p className="text-gray-600">Please wait while we gather your session summaries...</p>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Loading your learning recaps</h3>
+                        <p className="text-gray-600 dark:text-gray-400">Please wait while we gather your session summaries...</p>
                     </div>
                 </div>
             </main>
@@ -89,29 +89,29 @@ const RecapsPage = () => {
         <main className="container mx-auto px-4 py-8">
             <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="p-3 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl">
-                        <Image src="/icons/cap.svg" alt="Learning" width={28} height={28} className="text-primary" />
+                    <div className="p-3 bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-primary/20 dark:to-blue-500/20 rounded-2xl">
+                        <Image src="/icons/cap.svg" alt="Learning" width={28} height={28} className="text-primary dark:invert" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900">Learning Recaps</h1>
-                        <p className="text-gray-600 mt-1">Review and reflect on your learning journey</p>
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Learning Recaps</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">Review and reflect on your learning journey</p>
                     </div>
                 </div>
                 
                 {recaps.length > 0 && (
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/50">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-blue-600">
+                                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-blue-600 dark:text-blue-400">
                                         <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <div className="text-lg font-bold text-gray-900">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-white">
                                         {filteredRecaps.length} {filteredRecaps.length === 1 ? 'recap' : 'recaps'} found
                                     </div>
-                                    <div className="text-sm text-gray-600">
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
                                         {searchTerm || selectedSubject !== 'all' ? 'Filtered results' : `Total of ${recaps.length} learning sessions`}
                                     </div>
                                 </div>
@@ -119,15 +119,15 @@ const RecapsPage = () => {
                             
                             {recaps.length > 3 && (
                                 <div className="text-right">
-                                    <div className="text-sm text-gray-600 mb-1">Learning Progress</div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Learning Progress</div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-blue-500 to-primary rounded-full transition-all duration-500"
                                                 style={{ width: `${Math.min((recaps.length / 10) * 100, 100)}%` }}
                                             />
                                         </div>
-                                        <span className="text-xs font-medium text-gray-600">{recaps.length}/10</span>
+                                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{recaps.length}/10</span>
                                     </div>
                                 </div>
                             )}
@@ -139,14 +139,14 @@ const RecapsPage = () => {
             {/* Search and Filter Controls */}
             {recaps.length > 0 && (
                 <div className="mb-8">
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                    <div className="bg-white dark:bg-card rounded-2xl border border-gray-200 dark:border-border shadow-sm p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-primary/10 to-pink-100 rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-primary/10 to-pink-100 dark:from-primary/20 dark:to-pink-900/30 rounded-full flex items-center justify-center">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-primary">
                                     <path d="M3 6L5 6M5 6C5 7.10457 5.89543 8 7 8C8.10457 8 9 7.10457 9 6C9 4.89543 8.10457 4 7 4C5.89543 4 5 4.89543 5 6ZM5 6L21 6M9 12L11 12M11 12C11 13.1046 11.8954 14 13 14C14.1046 14 15 13.1046 15 12C15 10.8954 14.1046 10 13 10C11.8954 10 11 10.8954 11 12ZM11 12L3 12M11 12L21 12M15 18L17 18M17 18C17 19.1046 17.8954 20 19 20C20.1046 20 21 19.1046 21 18C21 16.8954 20.1046 16 19 16C17.8954 16 17 16.8954 17 18ZM17 18L3 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900">Search & Filter</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Search & Filter</h3>
                         </div>
                         
                         <div className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
@@ -312,37 +312,38 @@ const RecapsPage = () => {
                     {filteredRecaps.map((recap, index) => (
                         <div
                             key={recap.id}
-                            className="group relative bg-white rounded-4xl border border-black p-6 hover:shadow-xl hover:border-primary hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
+                            className="group relative bg-white dark:bg-card rounded-4xl border border-black dark:border-border p-6 hover:shadow-xl hover:border-primary hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
                             onClick={() => openRecapModal(recap)}
                             style={{
                                 animationDelay: `${index * 100}ms`
                             }}
                         >
                             {/* Gradient overlay */}
-                            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-4xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent dark:from-primary/20 rounded-bl-4xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             
                             {/* Header */}
                             <div className="flex items-start justify-between mb-5 relative z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-primary/20 dark:to-blue-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                         <Image 
                                             src={`/icons/${recap.subject.toLowerCase()}.svg`} 
                                             alt={recap.subject} 
                                             width={24} 
                                             height={24} 
+                                            className="dark:invert"
                                         />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-lg text-gray-900 group-hover:text-primary transition-colors duration-300">{recap.companion_name}</h3>
+                                        <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-primary transition-colors duration-300">{recap.companion_name}</h3>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-600 capitalize">{recap.subject}</span>
-                                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                                            <span className="text-xs text-gray-500">{formatTimeAgo(recap.created_at)}</span>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 capitalize">{recap.subject}</span>
+                                            <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
+                                            <span className="text-xs text-gray-500 dark:text-gray-500">{formatTimeAgo(recap.created_at)}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-2 bg-gray-100 rounded-full group-hover:bg-primary/10 transition-colors duration-300">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-gray-400 group-hover:text-primary transition-colors duration-300">
+                                <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-primary/10 dark:group-hover:bg-primary/20 transition-colors duration-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-gray-400 dark:text-gray-500 group-hover:text-primary transition-colors duration-300">
                                         <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                 </div>

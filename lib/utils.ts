@@ -8,6 +8,40 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getSubjectColor = (subject: string) => {
+    // Check if dark mode is active
+    if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
+        // Dark mode - darker card backgrounds that blend with dark theme
+        const darkSubjectsColors = {
+            science: "#2d1b4e",      // Deep purple
+            maths: "#3d2e10",        // Deep amber/gold
+            language: "#1e2a4a",     // Deep blue
+            coding: "#3d1a2e",       // Deep pink
+            history: "#3d1f0d",      // Deep orange
+            economics: "#0d2e1f",    // Deep emerald green
+        };
+        return darkSubjectsColors[subject as keyof typeof darkSubjectsColors];
+    }
+    
+    // Light mode colors - original bright colors
+    return subjectsColors[subject as keyof typeof subjectsColors];
+};
+
+export const getSubjectLogoColor = (subject: string) => {
+    // Check if dark mode is active
+    if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
+        // Dark mode - vibrant colors for logos/badges
+        const darkLogoColors = {
+            science: "#7c3aed",      // Vibrant purple
+            maths: "#f59e0b",        // Vibrant amber/gold
+            language: "#3b82f6",     // Vibrant blue
+            coding: "#ec4899",       // Vibrant pink
+            history: "#f97316",      // Vibrant orange
+            economics: "#10b981",    // Vibrant emerald green
+        };
+        return darkLogoColors[subject as keyof typeof darkLogoColors];
+    }
+    
+    // Light mode - same as card colors
     return subjectsColors[subject as keyof typeof subjectsColors];
 };
 
