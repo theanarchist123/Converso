@@ -45,7 +45,7 @@ export const getSubjectLogoColor = (subject: string) => {
     return subjectsColors[subject as keyof typeof subjectsColors];
 };
 
-export const configureAssistant = (voice: string, style: string) => {
+export const configureAssistant = (voice: string, style: string, duration?: number) => {
     const voiceId = voices[voice as keyof typeof voices][
         style as keyof (typeof voices)[keyof typeof voices]
         ] || "sarah";
@@ -88,6 +88,8 @@ export const configureAssistant = (voice: string, style: string) => {
                 },
             ],
         },
+        // Add max duration in seconds to ensure session ends at specified time
+        ...(duration && { maxDurationSeconds: duration * 60 }),
     };
     return vapiAssistant;
 };

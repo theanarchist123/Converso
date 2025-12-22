@@ -19,6 +19,7 @@ interface CompanionComponentProps {
     userImage: string;
     style: string;
     voice: string;
+    duration: number;
     continueFromSession?: boolean;
 }
 
@@ -29,7 +30,7 @@ enum CallStatus {
     FINISHED = 'FINISHED',
 }
 
-const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, continueFromSession = false }: CompanionComponentProps) => {
+const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, duration, continueFromSession = false }: CompanionComponentProps) => {
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -40,9 +41,12 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [bgColor, setBgColor] = useState(getSubjectColor(subject));
     const [loadingPreviousSession, setLoadingPreviousSession] = useState(false);
     const [hasPreviousSession, setHasPreviousSession] = useState(false);
+    const [timeRemaining, setTimeRemaining] = useState(duration * 60); // Convert minutes to seconds
+    const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const transcriptRef = useRef<HTMLDivElement>(null);
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     
     // Load previous session on mount if continueFromSession is true
     useEffect(() => {
@@ -101,6 +105,49 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             }, 100);
         }
     }, [messages]);
+
+    // Timer countdown effect
+    useEffect(() => {
+        if (callStatus === CallStatus.ACTIVE) {
+            // Set start time when session becomes active
+            if (sessionStartTime === null) {
+                setSessionStartTime(Date.now());
+            }
+            
+            // Start countdown timer
+            timerIntervalRef.current = setInterval(() => {
+                setTimeRemaining((prev) => {
+                    if (prev <= 1) {
+                        // Time's up - end the session
+                        if (timerIntervalRef.current) {
+                            clearInterval(timerIntervalRef.current);
+                        }
+                        handleDisconnect();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } else {
+            // Clear timer when session ends or is inactive
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+                timerIntervalRef.current = null;
+            }
+            // Reset timer when session ends
+            if (callStatus === CallStatus.FINISHED || callStatus === CallStatus.INACTIVE) {
+                setTimeRemaining(duration * 60);
+                setSessionStartTime(null);
+            }
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+            }
+        };
+    }, [callStatus, duration]);
 
     // Add a useEffect to monitor callStatus changes
     useEffect(() => {
@@ -255,7 +302,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         };
 
         try {
-            const assistant = configureAssistant(voice, style);
+            const assistant = configureAssistant(voice, style, duration);
             
             // Add previous conversation context if continuing
             if (previousMessages.length > 0 && continueFromSession) {
@@ -306,7 +353,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         
         try {
             console.log('Starting new VAPI session with:', { voice, style, subject, topic });
-            await vapi.start(configureAssistant(voice, style), assistantOverrides);
+            await vapi.start(configureAssistant(voice, style, duration), assistantOverrides);
             console.log('VAPI session started successfully');
         } catch (error) {
             console.error('Failed to restart VAPI:', error);
@@ -355,10 +402,50 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                             {userName}
                         </p>
                     </div>
+                    {callStatus === CallStatus.ACTIVE && (
+                        <div className="w-full mb-4">
+                            <div className="bg-gradient-to-r from-blue-500/10 to-primary/10 dark:from-blue-500/20 dark:to-primary/20 rounded-2xl p-4 border border-blue-200 dark:border-blue-800/50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                        </svg>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Time Remaining</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={cn(
+                                            "text-2xl font-bold tabular-nums",
+                                            timeRemaining < 60 ? "text-red-600 dark:text-red-400 animate-pulse" : "text-blue-600 dark:text-blue-400"
+                                        )}>
+                                            {Math.floor(timeRemaining / 60)}:{String(timeRemaining % 60).padStart(2, '0')}
+                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">/ {duration}m</span>
+                                    </div>
+                                </div>
+                                {timeRemaining < 60 && timeRemaining > 0 && (
+                                    <div className="mt-2">
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                            <div 
+                                                className="bg-red-500 h-1.5 rounded-full transition-all duration-1000"
+                                                style={{ width: `${(timeRemaining / 60) * 100}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-red-600 dark:text-red-400 mt-1 text-center font-medium">Session ending soon!</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div className="flex gap-2 w-full">
                         <button className="btn-mic flex-1" onClick={toggleMicrophone} disabled={callStatus !== CallStatus.ACTIVE}>
-                            <Image src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} alt="mic" width={36} height={36} />
-                            <p className="max-sm:hidden">
+                            <Image 
+                                src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} 
+                                alt="mic" 
+                                width={36} 
+                                height={36}
+                                className="brightness-110 contrast-125"
+                            />
+                            <p className="max-sm:hidden font-medium text-gray-900 dark:text-white">
                                 {isMuted ? 'Turn on mic' : 'Turn off mic'}
                             </p>
                         </button>
@@ -369,15 +456,22 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                                 handleRepeat();
                             }}
                         >
-                            <Image src="/icons/repeat.svg" alt="repeat" width={36} height={36} />
-                            <p className="max-sm:hidden">Repeat</p>
+                            <Image 
+                                src="/icons/repeat.svg" 
+                                alt="repeat" 
+                                width={36} 
+                                height={36}
+                                className="brightness-110 contrast-125"
+                            />
+                            <p className="max-sm:hidden font-medium text-gray-900 dark:text-white">Repeat</p>
                         </button>
                     </div>
                     <button 
                         className={cn(
-                            'rounded-lg py-2 cursor-pointer transition-colors w-full text-white', 
-                            callStatus === CallStatus.ACTIVE ? 'bg-red-700' : 'bg-primary', 
-                            callStatus === CallStatus.CONNECTING && 'animate-pulse'
+                            'rounded-lg py-3 px-4 cursor-pointer transition-colors w-full text-white font-semibold shadow-md border-0 outline-none', 
+                            callStatus === CallStatus.ACTIVE ? 'bg-red-600 hover:bg-red-700' : 'bg-primary hover:bg-primary/90', 
+                            callStatus === CallStatus.CONNECTING && 'animate-pulse',
+                            'disabled:opacity-50 disabled:cursor-not-allowed'
                         )} 
                         onClick={() => {
                             console.log('Session button clicked, current status:', callStatus);
@@ -399,9 +493,9 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                         }
                     </button>
                 </div>
-            </section>            <section className="transcript mt-8 flex-1 min-h-[300px] relative">
+            </section>            <section className="transcript mt-8 flex-1 min-h-[400px] relative">
                 {continueFromSession && hasPreviousSession && messages.length > 0 && (
-                    <div className="mb-2 flex items-center gap-2 px-4">
+                    <div className="mb-4 flex items-center gap-2 px-4">
                         <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-sm font-medium">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -418,10 +512,10 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                 )}
                 <div 
                     ref={transcriptRef}
-                    className="transcript-message no-scrollbar h-full overflow-y-auto max-h-[500px] p-4 bg-white/50 rounded-lg border"
+                    className="transcript-message no-scrollbar overflow-y-auto min-h-[350px] max-h-[600px] p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm"
                 >
                     {messages.length === 0 ? (
-                        <p className="text-center text-gray-500 py-8">No messages yet. Start speaking to see the transcript.</p>
+                        <p className="text-center text-gray-500 dark:text-gray-400 py-8">No messages yet. Start speaking to see the transcript.</p>
                     ) : (
                         messages.map((message, index) => {
                             const displayName = message.role === 'assistant' 
@@ -432,8 +526,8 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                                 <p key={index} className={cn(
                                     "max-sm:text-sm mb-4 p-3 rounded-lg shadow-sm",
                                     message.role === 'assistant' 
-                                        ? 'bg-gray-100 border-l-4 border-blue-500' 
-                                        : 'bg-primary/10 text-primary border-l-4 border-primary ml-8'
+                                        ? 'bg-gray-100 dark:bg-gray-700 border-l-4 border-blue-500 dark:border-blue-400 text-gray-900 dark:text-gray-100' 
+                                        : 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-l-4 border-primary ml-8'
                                 )}>
                                     <span className="font-bold text-xs uppercase tracking-wide opacity-70">{displayName}</span>
                                     <br />
@@ -443,7 +537,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                         })
                     )}
                 </div>
-                <div className="transcript-fade absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-white/80 to-transparent" />
+                <div className="transcript-fade absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-white/80 dark:from-gray-900/80 to-transparent" />
             </section>
 
             {/* Recap Generation Loading */}

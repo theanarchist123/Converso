@@ -39,8 +39,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${bricolage.variable} antialiased`}>
-        <ClerkProvider 
-          appearance={{ variables: {colorPrimary: '#fe5933' }}}
+        <ClerkProvider
+          appearance={{ variables: { colorPrimary: '#fe5933' } }}
+          signInUrl="/sign-in"
+          signUpUrl="/sign-up"
+          afterSignInUrl="/app"
+          afterSignUpUrl="/app"
         >
           <ThemeProvider>
             <ToastProvider>

@@ -162,12 +162,12 @@ const RecapsPage = () => {
                                     placeholder="Search by topic, companion, or content..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white"
+                                    className="w-full pl-12 pr-10 py-3 border border-gray-300 dark:border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-gray-50 dark:bg-input focus:bg-white dark:focus:bg-card dark:text-white"
                                 />
                                 {searchTerm && (
                                     <button
                                         onClick={() => setSearchTerm('')}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                                     >
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -181,7 +181,7 @@ const RecapsPage = () => {
                                 <select
                                     value={selectedSubject}
                                     onChange={(e) => setSelectedSubject(e.target.value)}
-                                    className="appearance-none w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-200 cursor-pointer"
+                                    className="appearance-none w-full bg-gray-50 dark:bg-input border border-gray-300 dark:border-border rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white dark:focus:bg-card transition-all duration-200 cursor-pointer dark:text-white"
                                 >
                                     <option value="all">All Subjects</option>
                                     {uniqueSubjects.map(subject => (
@@ -204,7 +204,7 @@ const RecapsPage = () => {
                                         setSearchTerm('');
                                         setSelectedSubject('all');
                                     }}
-                                    className="px-4 py-3 text-sm text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
+                                    className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -216,8 +216,8 @@ const RecapsPage = () => {
                         
                         {/* Quick Stats */}
                         {(searchTerm || selectedSubject !== 'all') && (
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                     <span className="flex items-center gap-1">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                         Showing {filteredRecaps.length} of {recaps.length} recaps

@@ -2,7 +2,7 @@ import React from 'react'
 import Link from "next/link";
 import Image from "next/image";
 import NavItems from "@/components/NavItems";
-import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
@@ -22,12 +22,12 @@ const Navbar = () => {
                 <NavItems/>
                 <ThemeToggle />
                 <SignedOut>
-                    <SignInButton>
+                    <Link href="/sign-in">
                         <button className="btn-signin">Sign In</button>
-                    </SignInButton>
+                    </Link>
                 </SignedOut>
                 <SignedIn>
-                    <UserButton />
+                    <UserButton afterSignOutUrl="/marketing" />
                 </SignedIn>
             </div>
         </nav>

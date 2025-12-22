@@ -98,6 +98,32 @@ body {
   font-family: var(--font-bricolage);
 }
 
+/* Global CSS rule to brighten ALL subject icons across the app */
+img[src*="/icons/science.svg"],
+img[src*="/icons/maths.svg"],
+img[src*="/icons/language.svg"],
+img[src*="/icons/coding.svg"],
+img[src*="/icons/history.svg"],
+img[src*="/icons/economics.svg"],
+img[src*="/icons/mic-off.svg"],
+img[src*="/icons/mic-on.svg"],
+img[src*="/icons/repeat.svg"] {
+  filter: brightness(1.4) contrast(1.3) saturate(1.2) !important;
+}
+
+/* Dark mode adjustments for icons that need inversion */
+.dark img[src*="/icons/science.svg"],
+.dark img[src*="/icons/maths.svg"],
+.dark img[src*="/icons/language.svg"],
+.dark img[src*="/icons/coding.svg"],
+.dark img[src*="/icons/history.svg"],
+.dark img[src*="/icons/economics.svg"],
+.dark img[src*="/icons/mic-off.svg"],
+.dark img[src*="/icons/mic-on.svg"],
+.dark img[src*="/icons/repeat.svg"] {
+  filter: brightness(1.5) contrast(1.4) saturate(1.3) !important;
+}
+
 .dark {
   --cta: #fccc41;
   --cta-gold: #2c2c2c;
@@ -213,7 +239,7 @@ body {
     @apply dark:text-white;
   }
   .subject-badge {
-    @apply bg-black dark:bg-primary text-white rounded-4xl text-sm px-2 py-1 capitalize;
+    @apply bg-primary dark:bg-primary text-white rounded-4xl text-sm px-2 py-1 capitalize font-semibold shadow-md;
   }
   .companion-bookmark {
     @apply px-2 bg-black dark:bg-primary rounded-4xl flex items-center h-full aspect-square cursor-pointer;
@@ -254,7 +280,10 @@ body {
   }
 
   .companion-avatar {
-    @apply size-[300px] flex items-center justify-center rounded-lg max-sm:size-[100px] mt-4;
+    @apply size-[300px] flex items-center justify-center rounded-lg max-sm:size-[100px] mt-4 shadow-xl;
+  }
+  .companion-avatar img {
+    filter: brightness(1.3) contrast(1.2) saturate(1.1);
   }
   .companion-lottie {
     @apply size-[300px] max-sm:size-[100px];
@@ -268,11 +297,11 @@ body {
   }
 
   .btn-mic {
-    @apply border-2 border-black dark:border-border rounded-lg flex flex-col gap-2 items-center py-8 max-sm:py-2 cursor-pointer w-full hover:bg-secondary dark:hover:bg-accent transition-colors;
+    @apply border-2 border-primary dark:border-primary rounded-lg flex flex-col gap-2 items-center py-8 max-sm:py-2 cursor-pointer w-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold text-gray-900 dark:text-white shadow-md hover:shadow-lg;
   }
 
   .transcript {
-    @apply relative flex flex-col gap-4 w-full items-center pt-10 flex-grow overflow-hidden;
+    @apply relative flex flex-col gap-4 w-full items-center flex-grow overflow-visible;
   }
   .transcript-message {
     @apply overflow-y-auto w-full flex flex-col gap-4 max-sm:gap-2 pr-2 h-full text-2xl;

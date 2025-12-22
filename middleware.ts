@@ -15,7 +15,17 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   
-  // If user is authenticated, check if they're banned FIRST
+  // Allow public routes for everyone
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+  
+  // Allow sign-in and sign-up pages for non-authenticated users
+  if (!userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
+    return NextResponse.next();
+  }
+  
+  // If user is authenticated, check if they're banned
   if (userId) {
     try {
       // Fetch fresh user data from Clerk API to get real-time ban status
@@ -31,10 +41,9 @@ export default clerkMiddleware(async (auth, req) => {
           return NextResponse.next();
         }
         
-        // Redirect ALL other pages to banned (including sign-in, sign-up, app, etc.)
+        // Redirect ALL other pages to banned
         console.log(`🚫 Banned user tried to access: ${req.nextUrl.pathname}`);
-        const bannedUrl = new URL('/banned', req.url);
-        return NextResponse.redirect(bannedUrl);
+        return NextResponse.redirect(new URL('/banned', req.url));
       }
       
       // If authenticated user tries to access sign-in/sign-up, redirect to app
@@ -44,18 +53,20 @@ export default clerkMiddleware(async (auth, req) => {
       }
     } catch (error) {
       console.error('❌ Error checking user ban status:', error);
-      // If error fetching user (might be deleted), allow to continue
+      // If error fetching user (might be deleted), clear and redirect to sign-in
+      if (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up')) {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL('/sign-in', req.url));
     }
   }
   
-  // For non-authenticated users: Allow sign-in and sign-up
-  if (!userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
-    return NextResponse.next();
-  }
-  
-  // Allow access to other public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
+  // For protected routes, redirect to sign-in if not authenticated
+  if (!userId) {
+    console.log(`🔒 Non-authenticated user tried to access: ${req.nextUrl.pathname}`);
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
   }
   
   return NextResponse.next();

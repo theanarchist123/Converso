@@ -34,6 +34,7 @@ const CompanionSession = async ({ params, searchParams }: CompanionSessionPagePr
                 companionId={id}
                 userName={user.firstName!}
                 userImage={user.imageUrl!}
+                duration={duration}
                 continueFromSession={continueSession === 'true'}
             />
         </main>

@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Call Gemini API
     console.log('🤖 Calling Gemini API...')
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' })
 
     const result = await model.generateContent(fullPrompt)
     const response = await result.response
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: aiMessage,
       metadata: {
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-exp',
         duration,
         timestamp: new Date().toISOString()
       }
@@ -241,6 +241,6 @@ export async function GET() {
     service: 'Converso Support Chat API',
     timestamp: new Date().toISOString(),
     apiConfigured: configured,
-    model: 'gemini-1.5-flash'
+    model: 'gemini-2.0-flash-exp'
   })
 }
