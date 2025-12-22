@@ -233,6 +233,9 @@ body {
   .btn-primary {
     @apply bg-primary text-white rounded-xl cursor-pointer px-4 py-2 flex items-center gap-2 hover:bg-primary/90 transition-colors;
   }
+  .btn-secondary {
+    @apply bg-white dark:bg-card text-primary dark:text-white border border-primary dark:border-border rounded-xl cursor-pointer px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-accent transition-colors;
+  }
   .navbar {
     @apply flex items-center justify-between mx-auto w-full px-14 py-4 bg-white dark:bg-card dark:border-b dark:border-border max-sm:px-4;
   }

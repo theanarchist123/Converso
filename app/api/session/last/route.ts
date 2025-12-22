@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         const supabase = createSupabaseClient();
         const { data, error } = await supabase
             .from("session_transcripts")
-            .select("messages, created_at")
+            .select("id, messages, created_at")
             .eq("user_id", user.id)
             .eq("companion_id", companionId)
             .order("created_at", { ascending: false })
@@ -30,8 +30,21 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to fetch last session' }, { status: 500 });
         }
 
-        const messages = data && data.length > 0 ? data[0].messages : [];
-        return NextResponse.json({ messages });
+        if (!data || data.length === 0) {
+            return NextResponse.json({ 
+                messages: [], 
+                sessionId: null, 
+                hasHistory: false 
+            });
+        }
+
+        const session = data[0];
+        return NextResponse.json({ 
+            messages: session.messages || [], 
+            sessionId: session.id,
+            createdAt: session.created_at,
+            hasHistory: true 
+        });
     } catch (error) {
         console.error('Error fetching last session:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

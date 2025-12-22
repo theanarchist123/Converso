@@ -6,10 +6,12 @@ import CompanionHeader from "@/components/CompanionHeader";
 
 interface CompanionSessionPageProps {
     params: Promise<{ id: string}>;
+    searchParams: Promise<{ continue?: string }>;
 }
 
-const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
+const CompanionSession = async ({ params, searchParams }: CompanionSessionPageProps) => {
     const { id } = await params;
+    const { continue: continueSession } = await searchParams;
     const companion = await getCompanion(id);
     const user = await currentUser();
 
@@ -32,6 +34,7 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
                 companionId={id}
                 userName={user.firstName!}
                 userImage={user.imageUrl!}
+                continueFromSession={continueSession === 'true'}
             />
         </main>
     )

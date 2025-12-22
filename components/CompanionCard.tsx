@@ -22,6 +22,8 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
     const router = useRouter();
     const [isDeleted, setIsDeleted] = useState(false);
     const [bgColor, setBgColor] = useState(color);
+    const [hasPreviousSession, setHasPreviousSession] = useState(false);
+    const [checkingSession, setCheckingSession] = useState(true);
     
     // Update color when theme changes
     useEffect(() => {
@@ -40,6 +42,23 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
         
         return () => observer.disconnect();
     }, [subject]);
+    
+    // Check if there's a previous session
+    useEffect(() => {
+        const checkPreviousSession = async () => {
+            try {
+                const response = await fetch(`/api/session/last?companionId=${id}`);
+                const data = await response.json();
+                setHasPreviousSession(data.hasHistory && data.messages && data.messages.length > 0);
+            } catch (error) {
+                console.error('Error checking previous session:', error);
+            } finally {
+                setCheckingSession(false);
+            }
+        };
+        
+        checkPreviousSession();
+    }, [id]);
     
     // If the component is deleted, don't render anything
     if (isDeleted) {
@@ -105,11 +124,29 @@ const CompanionCard = ({id,name,topic,subject,duration,color,bookmarked}:Compani
                     <p className="text-sm">{duration} minutes</p>
 
             </div>
-            <Link href={`/companions/${id}`} className="w-full">
-                <button className="btn-primary w-full justify-center">
-                    Launch Lesson
-                </button>
-            </Link>
+            {!checkingSession && hasPreviousSession ? (
+                <div className="flex flex-col gap-2 w-full">
+                    <Link href={`/companions/${id}?continue=true`} className="w-full">
+                        <button className="btn-primary w-full justify-center bg-green-600 hover:bg-green-700 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                            </svg>
+                            Continue
+                        </button>
+                    </Link>
+                    <Link href={`/companions/${id}`} className="w-full">
+                        <button className="btn-secondary w-full justify-center text-sm">
+                            Start New
+                        </button>
+                    </Link>
+                </div>
+            ) : (
+                <Link href={`/companions/${id}`} className="w-full">
+                    <button className="btn-primary w-full justify-center">
+                        Launch Lesson
+                    </button>
+                </Link>
+            )}
         </article>
     )
 }

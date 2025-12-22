@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { SessionTranscript } from '@/lib/actions/session.actions';
 
 const formatTimeAgo = (dateString: string) => {
@@ -371,12 +372,24 @@ const SessionHistory = () => {
                                     </div>
                                 </div>
                                 
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                                    <span className="text-sm text-primary font-semibold">View Chat</span>
-                                    <div className="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors duration-300">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-primary">
-                                            <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <div className="flex items-center gap-3">
+                                    <Link
+                                        href={`/companions/${session.companion_id}?continue=true`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary hover:text-white rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 text-sm font-medium"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                                         </svg>
+                                        Continue
+                                    </Link>
+                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                        <span className="text-sm text-primary font-semibold">View</span>
+                                        <div className="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors duration-300">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-primary">
+                                                <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -496,8 +509,17 @@ const SessionHistory = () => {
                             </div>
                             
                             {/* Enhanced scroll indicator */}
-                            <div className="flex justify-center mt-8 opacity-60">
-                                <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                            <div className="flex flex-col items-center gap-4 mt-8">
+                                <Link
+                                    href={`/companions/${selectedSession.companion_id}?continue=true`}
+                                    className="inline-flex items-center gap-3 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                    </svg>
+                                    Continue This Conversation
+                                </Link>
+                                <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm opacity-60">
                                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                                     <span>End of conversation</span>
                                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>

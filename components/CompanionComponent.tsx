@@ -19,6 +19,7 @@ interface CompanionComponentProps {
     userImage: string;
     style: string;
     voice: string;
+    continueFromSession?: boolean;
 }
 
 enum CallStatus {
@@ -28,7 +29,7 @@ enum CallStatus {
     FINISHED = 'FINISHED',
 }
 
-const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice }: CompanionComponentProps) => {
+const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, continueFromSession = false }: CompanionComponentProps) => {
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -37,9 +38,36 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [currentRecap, setCurrentRecap] = useState<SessionRecap | null>(null);
     const [isGeneratingRecap, setIsGeneratingRecap] = useState(false);
     const [bgColor, setBgColor] = useState(getSubjectColor(subject));
+    const [loadingPreviousSession, setLoadingPreviousSession] = useState(false);
+    const [hasPreviousSession, setHasPreviousSession] = useState(false);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const transcriptRef = useRef<HTMLDivElement>(null);
+    
+    // Load previous session on mount if continueFromSession is true
+    useEffect(() => {
+        const loadPreviousSession = async () => {
+            if (!continueFromSession) return;
+            
+            setLoadingPreviousSession(true);
+            try {
+                const response = await fetch(`/api/session/last?companionId=${companionId}`);
+                const data = await response.json();
+                
+                if (data.hasHistory && data.messages && data.messages.length > 0) {
+                    console.log('Loading previous session with', data.messages.length, 'messages');
+                    setMessages(data.messages);
+                    setHasPreviousSession(true);
+                }
+            } catch (error) {
+                console.error('Failed to load previous session:', error);
+            } finally {
+                setLoadingPreviousSession(false);
+            }
+        };
+        
+        loadPreviousSession();
+    }, [companionId, continueFromSession]);
     
     // Update color when theme changes
     useEffect(() => {
@@ -215,14 +243,38 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
-        setMessages([]); // Clear previous messages when starting new call
+        
+        // Only clear messages if NOT continuing from previous session
+        const previousMessages = continueFromSession && hasPreviousSession ? messages : [];
+        if (!continueFromSession || !hasPreviousSession) {
+            setMessages([]); // Clear previous messages when starting new call
+        }
 
         const assistantOverrides = {
             variableValues: { subject, topic, style }
-        }
+        };
 
         try {
-            await vapi.start(configureAssistant(voice, style), assistantOverrides);
+            const assistant = configureAssistant(voice, style);
+            
+            // Add previous conversation context if continuing
+            if (previousMessages.length > 0 && continueFromSession) {
+                console.log('Continuing from previous session with', previousMessages.length, 'messages');
+                
+                // Create a context summary from previous messages
+                const contextSummary = previousMessages.slice(-10).map(msg => 
+                    `${msg.role === 'user' ? 'Student' : 'Tutor'}: ${msg.content}`
+                ).join('\n');
+                
+                // Add context to the assistant's system message
+                if (assistant.model && assistant.model.messages && assistant.model.messages[0]) {
+                    assistant.model.messages[0].content += `\n\nPrevious conversation context:\n${contextSummary}\n\nNow continue the conversation naturally, acknowledging what was previously discussed.`;
+                }
+                
+                assistant.firstMessage = "Welcome back! Let's continue our session about {{topic}}. Do you have any questions about what we discussed before, or shall we move forward?";
+            }
+            
+            await vapi.start(assistant, assistantOverrides);
         } catch (error) {
             console.error('Failed to start VAPI:', error);
             setCallStatus(CallStatus.INACTIVE);
@@ -335,16 +387,35 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                                 handleCall();
                             }
                         }}
+                        disabled={loadingPreviousSession}
                     >
                         {callStatus === CallStatus.ACTIVE
                             ? "End Session"
                             : callStatus === CallStatus.CONNECTING
                                 ? 'Connecting'
-                                : 'Start Session'
+                                : continueFromSession && hasPreviousSession
+                                    ? 'Continue Conversation'
+                                    : 'Start Session'
                         }
                     </button>
                 </div>
             </section>            <section className="transcript mt-8 flex-1 min-h-[300px] relative">
+                {continueFromSession && hasPreviousSession && messages.length > 0 && (
+                    <div className="mb-2 flex items-center gap-2 px-4">
+                        <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                            <span>Continuing from previous session</span>
+                        </div>
+                    </div>
+                )}
+                {loadingPreviousSession && (
+                    <div className="mb-4 text-center py-8">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                        <p className="text-sm text-gray-500">Loading previous conversation...</p>
+                    </div>
+                )}
                 <div 
                     ref={transcriptRef}
                     className="transcript-message no-scrollbar h-full overflow-y-auto max-h-[500px] p-4 bg-white/50 rounded-lg border"
