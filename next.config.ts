@@ -9,7 +9,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      { hostname: 'img.clerk.com' }
+      { hostname: 'img.clerk.com' },
+      { hostname: 'images.unsplash.com' },
     ]
   }
 };

@@ -1,51 +1,26 @@
 'use client'
+import MarketingNav from '@/components/marketing/MarketingNav'
 import Hero from '@/components/marketing/Hero'
-import FeatureGrid from '@/components/marketing/FeatureGrid'
 import LogosMarquee from '@/components/marketing/LogosMarquee'
+import FeatureGrid from '@/components/marketing/FeatureGrid'
 import StatsStrip from '@/components/marketing/StatsStrip'
 import ProductTour from '@/components/marketing/ProductTour'
+import TestimonialsSection from '@/components/marketing/TestimonialsSection'
 import CTASection from '@/components/marketing/CTASection'
-import ProgressBar from '@/components/marketing/ProgressBar'
-import SmoothTransitions from '@/components/marketing/SmoothTransitions'
-
-import { useRef } from 'react'
-import { ScrollTrigger, useGsapRegister, useIsomorphicLayoutEffect } from '@/lib/gsap-client'
+import MarketingFooter from '@/components/marketing/MarketingFooter'
 
 export default function LandingPage() {
-  useGsapRegister()
-  const pageRef = useRef<HTMLElement>(null)
-
-  useIsomorphicLayoutEffect(() => {
-    // Refresh ScrollTrigger after all components mount
-    const timer = setTimeout(() => {
-      ScrollTrigger.refresh()
-    }, 100)
-
-    return () => clearTimeout(timer)
-  }, [])
-
   return (
-    <main ref={pageRef} className="marketing-page relative w-full min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white overflow-x-hidden">
-      <SmoothTransitions />
-      <ProgressBar />
-      <div className="marketing-section relative z-10" data-section="hero">
-        <Hero />
-      </div>
-      <div className="marketing-section relative z-10" data-section="logos">
-        <LogosMarquee />
-      </div>
-      <div className="marketing-section relative z-10" data-section="features">
-        <FeatureGrid />
-      </div>
-      <div className="marketing-section relative z-10" data-section="stats">
-        <StatsStrip />
-      </div>
-      <div className="marketing-section relative z-10" data-section="tour">
-        <ProductTour />
-      </div>
-      <div className="marketing-section relative z-10" data-section="cta">
-        <CTASection />
-      </div>
+    <main className="marketing-page relative w-full min-h-screen bg-[#050505] text-white overflow-x-hidden">
+      <MarketingNav />
+      <Hero />
+      <LogosMarquee />
+      <FeatureGrid />
+      <StatsStrip />
+      <ProductTour />
+      <TestimonialsSection />
+      <CTASection />
+      <MarketingFooter />
     </main>
   )
 }

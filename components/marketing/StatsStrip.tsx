@@ -1,85 +1,78 @@
 'use client'
-import { useRef } from 'react'
-import { gsap, ScrollTrigger, useGsapRegister, useIsomorphicLayoutEffect } from '@/lib/gsap-client'
-import { Users, Star, Globe } from 'lucide-react'
+import { useRef, useEffect } from 'react'
+import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
+import { Users, Star, Globe, BookOpen } from 'lucide-react'
 
 const STATS = [
-  { icon: Users, label: 'Active learners', value: 12800, suffix: '+' },
-  { icon: Star, label: 'Average rating', value: 4.9, suffix: '/5', decimals: 1 },
-  { icon: Globe, label: 'Countries', value: 42, suffix: '+' },
+  { icon: Users, label: 'Active Learners', value: 12800, suffix: '+', color: 'from-orange-500 to-pink-500' },
+  { icon: Star, label: 'Average Rating', value: 4.9, suffix: '/5', decimals: 1, color: 'from-amber-400 to-orange-500' },
+  { icon: BookOpen, label: 'AI Companions', value: 50, suffix: '+', color: 'from-purple-500 to-indigo-500' },
+  { icon: Globe, label: 'Countries', value: 42, suffix: '+', color: 'from-cyan-500 to-blue-500' },
 ]
 
+function CountUp({ end, decimals = 0, suffix }: { end: number; decimals?: number; suffix: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true })
+  const motionVal = useMotionValue(0)
+  const spring = useSpring(motionVal, { damping: 30, stiffness: 100 })
+
+  useEffect(() => {
+    if (inView) motionVal.set(end)
+  }, [inView, end, motionVal])
+
+  useEffect(() => {
+    const unsubscribe = spring.on('change', (v) => {
+      if (ref.current) {
+        ref.current.textContent = (decimals ? v.toFixed(decimals) : Math.floor(v).toString())
+      }
+    })
+    return unsubscribe
+  }, [spring, decimals])
+
+  return <span ref={ref}>0</span>
+}
+
 export default function StatsStrip() {
-  useGsapRegister()
-  const root = useRef<HTMLDivElement>(null)
-
-  useIsomorphicLayoutEffect(() => {
-    if (!root.current) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    
-    const ctx = gsap.context(() => {
-      document.querySelectorAll<HTMLElement>('.stat-val').forEach((el) => {
-        const end = Number(el.dataset.value)
-        const decimals = Number(el.dataset.decimals) || 0
-        
-        gsap.fromTo(el, 
-          { textContent: 0 }, 
-          {
-            textContent: end,
-            snap: { textContent: decimals === 0 ? 1 : 0.1 },
-            duration: 2,
-            ease: 'power2.out',
-            scrollTrigger: { 
-              trigger: el, 
-              start: 'top 85%',
-              once: true
-            },
-            onUpdate: function() {
-              const val = Number(this.targets()[0].textContent)
-              el.textContent = decimals === 0 ? Math.floor(val).toString() : val.toFixed(decimals)
-            }
-          }
-        )
-      })
-
-      // Icon float animation
-      gsap.from('.stat-icon', {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.2,
-        ease: 'back.out(1.7)',
-        scrollTrigger: {
-          trigger: root.current,
-          start: 'top 80%',
-          once: true
-        }
-      })
-    }, root)
-    
-    return () => ctx.revert()
-  }, [])
-
   return (
-    <section ref={root} className="relative bg-gradient-to-b from-black to-gray-900 py-20 border-y border-white/10">
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-purple-500/5 to-pink-500/5" />
-      <div className="relative w-full px-6 md:px-12 lg:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="group">
-              <div className="stat-icon inline-flex p-4 rounded-2xl bg-gradient-to-br from-orange-500/20 to-pink-500/20 border border-white/10 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <stat.icon className="w-8 h-8 text-orange-400" />
+    <section className="relative py-24 bg-[#050505] overflow-hidden">
+      {/* top/bottom dividers */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+      {/* Textured panel */}
+      <div className="absolute inset-4 md:inset-8 rounded-3xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
+        {/* grain */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+        }} />
+        {/* center glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-pink-500/5 to-purple-500/5" />
+      </div>
+
+      <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-white/8">
+          {STATS.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col items-center text-center lg:px-10 py-4"
+            >
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-5 shadow-lg`}>
+                <stat.icon className="w-5 h-5 text-white" />
               </div>
-              <div className="flex items-baseline justify-center gap-1">
-                <div className="stat-val text-5xl font-bold text-white" 
-                     data-value={stat.value}
-                     data-decimals={stat.decimals || 0}>
-                  0
-                </div>
-                <span className="text-3xl font-bold text-white/80">{stat.suffix}</span>
+              <div className="flex items-baseline gap-0.5 mb-2">
+                <span className={`text-5xl font-extrabold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent tracking-tight`}>
+                  <CountUp end={stat.value} decimals={stat.decimals} suffix={stat.suffix} />
+                </span>
+                <span className={`text-2xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                  {stat.suffix}
+                </span>
               </div>
-              <div className="mt-3 text-lg text-white/60 font-medium">{stat.label}</div>
-            </div>
+              <div className="text-white/40 text-sm font-medium">{stat.label}</div>
+            </motion.div>
           ))}
         </div>
       </div>
