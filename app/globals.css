@@ -19,7 +19,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
   --primary-foreground: 210 20% 98%;
-  
+
   --chart-1: 262.1 83.3% 57.8%;
   --chart-2: 263.4 70% 50.4%;
   --chart-3: 270 91% 65%;
@@ -127,41 +127,41 @@ img[src*="/icons/repeat.svg"] {
 .dark {
   --cta: #fccc41;
   --cta-gold: #2c2c2c;
-  
+
   --background: 222.2 84% 4.9%;
   --foreground: 210 20% 98%;
-  
+
   --card: 222.2 47% 11%;
   --card-foreground: 210 20% 98%;
-  
+
   --popover: 222.2 47% 11%;
   --popover-foreground: 210 20% 98%;
-  
+
   --primary: 14 99% 60%;
   --primary-foreground: 210 20% 98%;
-  
+
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 20% 98%;
-  
+
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
-  
+
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 20% 98%;
-  
+
   --destructive: 0 62.8% 50.6%;
   --destructive-foreground: 210 20% 98%;
-  
+
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 14 99% 60%;
-  
+
   --chart-1: 12 76% 61%;
   --chart-2: 173 58% 39%;
   --chart-3: 197 37% 34%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
-  
+
   --sidebar: 222.2 84% 4.9%;
   --sidebar-foreground: 210 20% 98%;
   --sidebar-primary: 14 99% 60%;
@@ -176,12 +176,15 @@ img[src*="/icons/repeat.svg"] {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   main:not(.marketing-page) {
     @apply mx-auto px-14 flex flex-col gap-8 bg-background h-full max-w-[1400px] pt-10 max-sm:px-2;
   }
+
   h1 {
     @apply text-3xl font-bold;
   }
@@ -200,20 +203,20 @@ img[src*="/icons/repeat.svg"] {
     min-height: 100vh !important;
     overflow-x: hidden !important;
   }
-  
+
   /* Ensure all child sections take full width */
-  .marketing-page > * {
+  .marketing-page>* {
     width: 100% !important;
     max-width: none !important;
   }
-  
+
   /* Smooth section transitions */
   .marketing-section {
     position: relative;
     z-index: 1;
     background: inherit;
   }
-  
+
   .marketing-section:not(:last-child)::after {
     content: '';
     position: absolute;
@@ -221,56 +224,84 @@ img[src*="/icons/repeat.svg"] {
     left: 0;
     right: 0;
     height: 100px;
-    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.3) 100%);
     pointer-events: none;
     z-index: 2;
   }
+
   .home-section {
     @apply flex gap-4 justify-between items-start w-full max-lg:flex-col-reverse max-lg:items-center;
   }
+
   .companions-grid {
     @apply flex flex-wrap gap-4 w-full max-md:justify-center;
   }
+
   .companion-card {
     @apply flex flex-col rounded-4xl border border-black dark:border-border px-4 py-4 gap-5 w-full min-lg:max-w-[410px] justify-between hover:shadow-lg dark:hover:shadow-primary/10 transition-all;
   }
+
   .companion-card h2,
   .companion-card p {
     @apply dark:text-white;
   }
+
   .subject-badge {
     @apply bg-primary dark:bg-primary text-white rounded-4xl text-sm px-2 py-1 capitalize font-semibold shadow-md;
   }
+
   .companion-bookmark {
     @apply px-2 bg-black dark:bg-primary rounded-4xl flex items-center h-full aspect-square cursor-pointer;
   }
+
   .input {
-    @apply !border-black dark:!border-border !bg-white dark:!bg-input dark:!text-foreground focus-visible:!ring-0 focus-visible:!border-black dark:focus-visible:!border-primary !w-full;
+    @apply !border-black !bg-white !w-full;
   }
+
+  .input:focus-visible {
+    @apply !ring-0 !border-black;
+  }
+
+  .dark .input {
+    @apply !border-border !bg-input !text-foreground;
+  }
+
+  .dark .input:focus-visible {
+    @apply !border-primary;
+  }
+
   .rounded-border {
     @apply rounded-4xl border border-black dark:border-border;
   }
+
   .cta-section {
     @apply bg-cta dark:bg-card text-white rounded-4xl px-7 py-10 flex flex-col items-center text-center gap-5 w-1/3 max-lg:w-1/2 max-md:w-full border dark:border-border;
   }
+
   .cta-badge {
     @apply bg-cta-gold dark:bg-primary rounded-4xl px-3 py-1.5 text-black dark:text-white;
   }
+
   .btn-primary {
     @apply bg-primary text-white rounded-xl cursor-pointer px-4 py-2 flex items-center gap-2 hover:bg-primary/90 transition-colors;
   }
+
   .btn-secondary {
     @apply bg-white dark:bg-card text-primary dark:text-white border border-primary dark:border-border rounded-xl cursor-pointer px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-accent transition-colors;
   }
+
   .navbar {
     @apply flex items-center justify-between mx-auto w-full px-14 py-4 bg-white dark:bg-card dark:border-b dark:border-border max-sm:px-4;
   }
+
   .btn-signin {
     @apply border border-black dark:border-primary dark:text-primary rounded-4xl px-4 py-2.5 text-sm font-semibold flex items-center gap-2 cursor-pointer hover:bg-secondary dark:hover:bg-accent transition-colors;
   }
+
   .companion-list {
     @apply rounded-4xl border border-black dark:border-border px-7 pt-7 pb-10 max-lg:w-full bg-white dark:bg-card;
   }
+
   .companion-limit {
     @apply items-center justify-center flex flex-col gap-4 w-full min-2xl:w-1/2 pt-20 text-center;
   }
@@ -282,9 +313,11 @@ img[src*="/icons/repeat.svg"] {
   .companion-avatar {
     @apply size-[300px] flex items-center justify-center rounded-lg max-sm:size-[100px] mt-4 shadow-xl;
   }
+
   .companion-avatar img {
     filter: brightness(1.3) contrast(1.2) saturate(1.1);
   }
+
   .companion-lottie {
     @apply size-[300px] max-sm:size-[100px];
   }
@@ -292,6 +325,7 @@ img[src*="/icons/repeat.svg"] {
   .user-section {
     @apply flex flex-col gap-4 w-1/3 max-sm:w-full max-sm:flex-row;
   }
+
   .user-avatar {
     @apply border-2 border-black dark:border-border flex flex-col gap-4 items-center rounded-lg py-8 max-sm:hidden;
   }
@@ -303,9 +337,11 @@ img[src*="/icons/repeat.svg"] {
   .transcript {
     @apply relative flex flex-col gap-4 w-full items-center flex-grow overflow-visible;
   }
+
   .transcript-message {
     @apply overflow-y-auto w-full flex flex-col gap-4 max-sm:gap-2 pr-2 h-full text-2xl;
   }
+
   .transcript-fade {
     @apply pointer-events-none absolute bottom-0 left-0 right-0 h-40 max-sm:h-20 bg-gradient-to-t from-background via-background/90 to-transparent z-10;
   }
@@ -337,6 +373,7 @@ img[src*="/icons/repeat.svg"] {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -348,6 +385,7 @@ img[src*="/icons/repeat.svg"] {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -358,6 +396,7 @@ img[src*="/icons/repeat.svg"] {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -369,6 +408,7 @@ img[src*="/icons/repeat.svg"] {
     opacity: 0;
     transform: translateX(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -376,10 +416,13 @@ img[src*="/icons/repeat.svg"] {
 }
 
 @keyframes pulse-scale {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.05);
     opacity: 0.8;
@@ -387,18 +430,24 @@ img[src*="/icons/repeat.svg"] {
 }
 
 @keyframes bounce-gentle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
 }
 
 @keyframes glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
   }
@@ -427,4 +476,259 @@ img[src*="/icons/repeat.svg"] {
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
+}
+
+/* ========================================
+   IMMERSIVE SESSION EXPERIENCE
+   ======================================== */
+
+/* Full-viewport immersive session layout — covers navbar & fills screen */
+.immersive-session-page {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Orbital ring animations */
+@keyframes orbit-cw {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes orbit-tilt {
+  from {
+    transform: rotateX(70deg) rotate(0deg);
+  }
+
+  to {
+    transform: rotateX(70deg) rotate(360deg);
+  }
+}
+
+/* Avatar breathing pulse when idle */
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.15), 0 0 60px rgba(255, 255, 255, 0.05);
+  }
+
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.3), 0 0 100px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Avatar glow burst when speaking */
+@keyframes speaking-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px var(--session-color, #7c3aed), 0 0 60px var(--session-color, #7c3aed), 0 0 120px rgba(124, 58, 237, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px var(--session-color, #7c3aed), 0 0 100px var(--session-color, #7c3aed), 0 0 180px rgba(124, 58, 237, 0.5);
+  }
+}
+
+/* Floating keyword bubble animation */
+@keyframes float-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(0px) scale(0.7);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+
+  70% {
+    opacity: 0.9;
+    transform: translateY(-80px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-140px) scale(0.9);
+  }
+}
+
+/* Word-by-word live caption appearance */
+@keyframes word-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.95);
+    filter: blur(4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* Particle drift for subject backgrounds */
+@keyframes particle-drift {
+  0% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+    opacity: 0.6;
+  }
+
+  33% {
+    transform: translateY(-30px) translateX(15px) rotate(120deg);
+    opacity: 0.8;
+  }
+
+  66% {
+    transform: translateY(-10px) translateX(-10px) rotate(240deg);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(0px) translateX(0px) rotate(360deg);
+    opacity: 0.6;
+  }
+}
+
+@keyframes particle-rise {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-10vh) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Transcript drawer slide-up */
+@keyframes drawer-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-slide-down {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Waveform bar dance */
+@keyframes wave-bar {
+
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Caption text shimmer when speaking */
+@keyframes caption-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Utility animation classes */
+.animate-orbit-cw {
+  animation: orbit-cw 4s linear infinite;
+}
+
+.animate-orbit-ccw {
+  animation: orbit-ccw 6s linear infinite;
+}
+
+.animate-orbit-tilt {
+  animation: orbit-tilt 8s linear infinite;
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.animate-speaking-glow {
+  animation: speaking-glow 0.8s ease-in-out infinite;
+}
+
+.animate-float-up-fade {
+  animation: float-up-fade 3s ease-out forwards;
+}
+
+.animate-word-pop {
+  animation: word-pop 0.25s ease-out forwards;
+}
+
+.animate-particle {
+  animation: particle-drift 8s ease-in-out infinite;
+}
+
+.animate-wave-bar {
+  animation: wave-bar 0.6s ease-in-out infinite;
+}
+
+/* Frosted glass effect for control bar */
+.frosted-glass {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Transcript drawer frosted */
+.frosted-dark {
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
