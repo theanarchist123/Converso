@@ -18,7 +18,7 @@ const formatTimeAgo = (dateString: string) => {
     if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     if (diffInDays < 7) return `${diffInDays} days ago`;
-    
+
     return date.toLocaleDateString();
 };
 
@@ -58,8 +58,8 @@ const RecapsPage = () => {
     // Filter recaps based on search term and selected subject
     const filteredRecaps = recaps.filter(recap => {
         const matchesSearch = recap.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            recap.companion_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            recap.summary.toLowerCase().includes(searchTerm.toLowerCase());
+            recap.companion_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            recap.summary.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesSubject = selectedSubject === 'all' || recap.subject.toLowerCase() === selectedSubject.toLowerCase();
         return matchesSearch && matchesSubject;
     });
@@ -97,14 +97,14 @@ const RecapsPage = () => {
                         <p className="text-gray-600 dark:text-gray-400 mt-1">Review and reflect on your learning journey</p>
                     </div>
                 </div>
-                
+
                 {recaps.length > 0 && (
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/50">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-blue-600 dark:text-blue-400">
-                                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2"/>
+                                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" />
                                     </svg>
                                 </div>
                                 <div>
@@ -116,13 +116,13 @@ const RecapsPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {recaps.length > 3 && (
                                 <div className="text-right">
                                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Learning Progress</div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                            <div 
+                                            <div
                                                 className="h-full bg-gradient-to-r from-blue-500 to-primary rounded-full transition-all duration-500"
                                                 style={{ width: `${Math.min((recaps.length / 10) * 100, 100)}%` }}
                                             />
@@ -143,18 +143,18 @@ const RecapsPage = () => {
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 bg-gradient-to-br from-primary/10 to-pink-100 dark:from-primary/20 dark:to-pink-900/30 rounded-full flex items-center justify-center">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-primary">
-                                    <path d="M3 6L5 6M5 6C5 7.10457 5.89543 8 7 8C8.10457 8 9 7.10457 9 6C9 4.89543 8.10457 4 7 4C5.89543 4 5 4.89543 5 6ZM5 6L21 6M9 12L11 12M11 12C11 13.1046 11.8954 14 13 14C14.1046 14 15 13.1046 15 12C15 10.8954 14.1046 10 13 10C11.8954 10 11 10.8954 11 12ZM11 12L3 12M11 12L21 12M15 18L17 18M17 18C17 19.1046 17.8954 20 19 20C20.1046 20 21 19.1046 21 18C21 16.8954 20.1046 16 19 16C17.8954 16 17 16.8954 17 18ZM17 18L3 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M3 6L5 6M5 6C5 7.10457 5.89543 8 7 8C8.10457 8 9 7.10457 9 6C9 4.89543 8.10457 4 7 4C5.89543 4 5 4.89543 5 6ZM5 6L21 6M9 12L11 12M11 12C11 13.1046 11.8954 14 13 14C14.1046 14 15 13.1046 15 12C15 10.8954 14.1046 10 13 10C11.8954 10 11 10.8954 11 12ZM11 12L3 12M11 12L21 12M15 18L17 18M17 18C17 19.1046 17.8954 20 19 20C20.1046 20 21 19.1046 21 18C21 16.8954 20.1046 16 19 16C17.8954 16 17 16.8954 17 18ZM17 18L3 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Search & Filter</h3>
                         </div>
-                        
+
                         <div className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
                             {/* Search Bar */}
                             <div className="relative flex-1">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                                        <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                                 <input
@@ -192,7 +192,7 @@ const RecapsPage = () => {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                                        <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                             </div>
@@ -213,7 +213,7 @@ const RecapsPage = () => {
                                 </button>
                             )}
                         </div>
-                        
+
                         {/* Quick Stats */}
                         {(searchTerm || selectedSubject !== 'all') && (
                             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
@@ -259,9 +259,9 @@ const RecapsPage = () => {
                         </div>
                     </div>
                     <div className="max-w-2xl mx-auto">
-                        <h3 className="text-3xl font-bold text-gray-900 mb-4">Your Learning Journey Awaits!</h3>
-                        <p className="text-gray-600 mb-10 text-lg leading-relaxed">
-                            Start meaningful conversations with our AI companions and watch your knowledge grow. 
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Your Learning Journey Awaits!</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-10 text-lg leading-relaxed">
+                            Start meaningful conversations with our AI companions and watch your knowledge grow.
                             Each session will generate intelligent summaries and insights to track your progress.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -270,16 +270,16 @@ const RecapsPage = () => {
                                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl hover:from-primary/90 hover:to-blue-600/90 transition-all duration-300 hover:shadow-lg font-semibold group transform hover:scale-105"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:scale-110 transition-transform duration-300">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                 </svg>
                                 Start Your First Session
                             </a>
                             <a
                                 href="/session-history"
-                                className="inline-flex items-center gap-2 px-6 py-4 bg-white text-gray-700 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 font-medium"
+                                className="inline-flex items-center gap-2 px-6 py-4 bg-white dark:bg-card text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-border rounded-2xl hover:bg-gray-50 dark:hover:bg-muted hover:border-gray-300 transition-all duration-300 font-medium"
                             >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 View Session History
                             </a>
@@ -290,11 +290,11 @@ const RecapsPage = () => {
                 <div className="text-center py-16">
                     <div className="w-32 h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">No matching recaps found</h3>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">No matching recaps found</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                         Try adjusting your search terms or filters to discover more learning sessions.
                     </p>
                     <button
@@ -320,17 +320,17 @@ const RecapsPage = () => {
                         >
                             {/* Gradient overlay */}
                             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent dark:from-primary/20 rounded-bl-4xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            
+
                             {/* Header */}
                             <div className="flex items-start justify-between mb-5 relative z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-primary/20 dark:to-blue-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                        <Image 
-                                            src={`/icons/${recap.subject.toLowerCase()}.svg`} 
-                                            alt={recap.subject} 
-                                            width={24} 
-                                            height={24} 
-                                            className="dark:invert"
+                                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-primary/40 dark:to-blue-400/30 border border-transparent dark:border-primary/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm dark:shadow-[0_0_15px_rgba(255,100,50,0.15)]">
+                                        <Image
+                                            src={`/icons/${recap.subject.toLowerCase()}.svg`}
+                                            alt={recap.subject}
+                                            width={24}
+                                            height={24}
+                                            className="dark:invert dark:brightness-200 dark:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]"
                                         />
                                     </div>
                                     <div>
@@ -342,24 +342,24 @@ const RecapsPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-primary/10 dark:group-hover:bg-primary/20 transition-colors duration-300">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-gray-400 dark:text-gray-500 group-hover:text-primary transition-colors duration-300">
-                                        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <div className="p-2 bg-gray-100 dark:bg-gray-700/80 rounded-full group-hover:bg-primary/20 dark:group-hover:bg-primary/40 transition-colors duration-300 border border-transparent dark:border-gray-600 shadow-sm">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-gray-500 dark:text-gray-300 group-hover:text-primary dark:group-hover:text-white transition-colors duration-300">
+                                        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                             </div>
 
                             {/* Topic */}
                             <div className="mb-5">
-                                <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-2xl p-4 border border-gray-100 group-hover:border-primary/20 transition-all duration-300">
-                                    <h4 className="font-semibold text-gray-900 mb-1">Topic</h4>
-                                    <p className="text-sm text-gray-700 line-clamp-2">{recap.topic}</p>
+                                <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 dark:from-muted dark:to-muted/60 rounded-2xl p-4 border border-gray-100 dark:border-border group-hover:border-primary/20 transition-all duration-300">
+                                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Topic</h4>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{recap.topic}</p>
                                 </div>
                             </div>
 
                             {/* Key Points Preview */}
                             <div className="mb-5">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                     <div className="w-2 h-2 bg-primary rounded-full"></div>
                                     Key Learning Points
                                 </h4>
@@ -367,7 +367,7 @@ const RecapsPage = () => {
                                     {recap.bullet_points.slice(0, 2).map((point, index) => (
                                         <div key={index} className="flex items-start gap-3">
                                             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                                            <span className="text-sm text-gray-600 line-clamp-1 leading-relaxed">{point}</span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 leading-relaxed">{point}</span>
                                         </div>
                                     ))}
                                     {recap.bullet_points.length > 2 && (
@@ -384,13 +384,13 @@ const RecapsPage = () => {
                                     {recap.key_topics.slice(0, 3).map((topic, index) => (
                                         <span
                                             key={index}
-                                            className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100 group-hover:bg-blue-100 transition-colors duration-300"
+                                            className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium border border-blue-100 dark:border-blue-800/50 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors duration-300"
                                         >
                                             {topic}
                                         </span>
                                     ))}
                                     {recap.key_topics.length > 3 && (
-                                        <span className="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium border border-gray-100">
+                                        <span className="px-3 py-1.5 bg-gray-50 dark:bg-muted text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium border border-gray-100 dark:border-border">
                                             +{recap.key_topics.length - 3}
                                         </span>
                                     )}
@@ -398,19 +398,19 @@ const RecapsPage = () => {
                             </div>
 
                             {/* Footer Stats */}
-                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-border">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 rounded-full border border-green-100">
+                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 dark:bg-green-900/30 rounded-full border border-green-100 dark:border-green-800/50">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <span className="text-xs font-semibold text-green-700">AI Generated</span>
+                                        <span className="text-xs font-semibold text-green-700 dark:text-green-400">AI Generated</span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <span className="text-xs text-primary font-semibold">View Recap</span>
                                 </div>
                             </div>
-                            
+
                             {/* Hover indicator line */}
                             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
                         </div>

@@ -271,11 +271,15 @@ npm run dev
 ### **Landing Page**
 ![Landing Page](public/readme/landing.png)
 
+### **Home Page**
+![Home Page](public/readme/home.png)
+
 ### **Companion Selection**
 ![Companions](public/readme/companions.png)
 
 ### **Live Conversation**
 ![Chat Interface](public/readme/conversations.png)
+![Chat Interface](public/readme/conversations2.png)
 
 ### **Session Recap**
 ![Recap](public/readme/recap.png)

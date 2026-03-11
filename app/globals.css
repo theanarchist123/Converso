@@ -94,6 +94,11 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-bricolage);
 }
@@ -731,4 +736,53 @@ img[src*="/icons/repeat.svg"] {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   MY JOURNEY PAGE
+   ======================================== */
+
+@keyframes pulse-ring {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0px hsl(14 99% 60% / 0.4), 0 0 0 6px hsl(14 99% 60% / 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px hsl(14 99% 60% / 0.25), 0 0 0 12px hsl(14 99% 60% / 0.05);
+  }
+}
+
+.journey-avatar-ring {
+  animation: pulse-ring 3s ease-in-out infinite;
+  border-radius: 9999px;
+}
+
+.journey-stat-card {
+  @apply flex flex-col gap-1 rounded-2xl border border-border bg-card px-5 py-4 min-w-[130px] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
+}
+
+.journey-tab {
+  @apply relative px-5 py-2.5 text-sm font-semibold text-muted-foreground rounded-xl transition-all duration-200 hover:text-foreground hover:bg-muted cursor-pointer whitespace-nowrap;
+}
+
+.journey-tab-active {
+  @apply text-foreground bg-background shadow-sm border border-border;
+}
+
+.journey-companion-card {
+  @apply flex flex-col p-4 rounded-2xl border border-border bg-card hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer;
+}
+
+.journey-section-header {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.journey-section-icon {
+  @apply size-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0;
+}
+
+.journey-empty-state {
+  @apply flex flex-col items-center justify-center py-16 text-center gap-3 col-span-full;
 }
